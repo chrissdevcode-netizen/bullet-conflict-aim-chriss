@@ -1070,11 +1070,6 @@ end)
 
 
 
-
-
-
-
-
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Name", "ESPName", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Distancia", "ESPDist", Theme.Visuals)
@@ -1082,7 +1077,7 @@ AddToggle(TabVisuals, "ESP Health", "ESPHealth", Theme.Visuals)
 AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals) 
 AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals) 
-AddToggle(TabVisuals, "ESP Armas Tiradas 🔫", "ESPDroppedGuns", Theme.Visuals)
+AddToggle(TabVisuals, "ESP Armas Tiradas", "ESPDroppedGuns", Theme.Visuals)
 
 
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
