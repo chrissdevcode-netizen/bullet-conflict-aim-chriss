@@ -1,4 +1,4 @@
--- 
+-- SERVICIOS CONFLICTO DE BALAS 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1397,7 +1397,7 @@ local function CreateESP(player)
                 traceLine.Visible = false
             end
         else
-            -- Limpieza completa de memoria al morir
+ -- Limpieza de memoria al morir
             box:Destroy()
             nameText:Destroy()
             distText:Destroy()
@@ -1664,9 +1664,6 @@ UserInputService.JumpRequest:Connect(function()
         Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
-
-
-
 
 
 
