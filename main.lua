@@ -347,9 +347,6 @@ if not Character then
     Character = LocalPlayer.Character
 end
 
-LocalPlayer.CharacterAdded:Connect(function(newChar)
-    Character = newChar
-end)
 local Camera = workspace.CurrentCamera
 
 -- Utilidad
@@ -561,7 +558,8 @@ PageContainer.Position = UDim2.new(0, 110, 0, 42)
 PageContainer.BackgroundTransparency = 1
 PageContainer.Parent = MainFrame
 
--- Botón Flotante para abrir el menú
+
+    -- Botón Flotante para abrir el menú
 local OpenBtnFrame = Instance.new("Frame")
 OpenBtnFrame.Name = "OpenBtnFrame"
 OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56) 
@@ -605,6 +603,87 @@ end)
 local Pages = {}
 local TabButtons = {}
 local isTweening = false
+
+-- Advertencia UI (Dinámica)
+local WarningFrame = Instance.new("Frame")
+WarningFrame.Size = UDim2.new(0, 320, 0, 130)
+WarningFrame.Position = UDim2.new(0.5, -160, 0.5, -65)
+WarningFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
+WarningFrame.BorderSizePixel = 0
+WarningFrame.Visible = false
+WarningFrame.ZIndex = 50
+WarningFrame.Parent = ScreenGui 
+
+local WarningCorner = Instance.new("UICorner")
+WarningCorner.CornerRadius = UDim.new(0, 10)
+WarningCorner.Parent = WarningFrame
+
+local WarningStroke = Instance.new("UIStroke")
+WarningStroke.Color = Color3.fromRGB(255, 80, 80) 
+WarningStroke.Thickness = 1.5
+WarningStroke.Parent = WarningFrame
+
+local WarningText = Instance.new("TextLabel")
+WarningText.Size = UDim2.new(1, -20, 0.6, 0)
+WarningText.Position = UDim2.new(0, 10, 0, 10)
+WarningText.Text = "⚠️ ADVERTENCIA"
+WarningText.Font = Enum.Font.GothamBold
+WarningText.TextSize = 13
+WarningText.TextColor3 = Color3.fromRGB(220, 220, 220)
+WarningText.TextWrapped = true
+WarningText.BackgroundTransparency = 1
+WarningText.ZIndex = 51
+WarningText.Parent = WarningFrame
+
+local BtnCancel = Instance.new("TextButton")
+BtnCancel.Size = UDim2.new(0.4, 0, 0, 32)
+BtnCancel.Position = UDim2.new(0.06, 0, 0.65, 0)
+BtnCancel.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+BtnCancel.Text = "Cancelar"
+BtnCancel.Font = Enum.Font.GothamBold
+BtnCancel.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnCancel.TextSize = 12
+BtnCancel.ZIndex = 51
+BtnCancel.Parent = WarningFrame
+
+local BtnCancelCorner = Instance.new("UICorner")
+BtnCancelCorner.CornerRadius = UDim.new(0, 6)
+BtnCancelCorner.Parent = BtnCancel
+
+local BtnConfirm = Instance.new("TextButton")
+BtnConfirm.Size = UDim2.new(0.4, 0, 0, 32)
+BtnConfirm.Position = UDim2.new(0.54, 0, 0.65, 0)
+BtnConfirm.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+BtnConfirm.Text = "Confirmar"
+BtnConfirm.Font = Enum.Font.GothamBold
+BtnConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnConfirm.TextSize = 12
+BtnConfirm.ZIndex = 51
+BtnConfirm.Parent = WarningFrame
+
+local BtnConfirmCorner = Instance.new("UICorner")
+BtnConfirmCorner.CornerRadius = UDim.new(0, 6)
+BtnConfirmCorner.Parent = BtnConfirm
+
+local PendingConfirmAction = nil
+local PendingCancelAction = nil
+
+local function ShowWarning(text, onConfirm, onCancel)
+    WarningText.Text = text
+    WarningFrame.Visible = true
+    PendingConfirmAction = onConfirm
+    PendingCancelAction = onCancel
+end
+
+BtnConfirm.MouseButton1Click:Connect(function()
+    WarningFrame.Visible = false 
+    if PendingConfirmAction then PendingConfirmAction() end
+end)
+
+BtnCancel.MouseButton1Click:Connect(function()
+    WarningFrame.Visible = false 
+    if PendingCancelAction then PendingCancelAction() end
+end)
 
 -- Lógica para cerrar el menú
 CloseBtn.MouseButton1Click:Connect(function()
@@ -651,7 +730,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Lógica para abrir el menú (con memoria de pestaña)
+    -- Lógica para abrir el menú
 OpenBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
@@ -739,7 +818,7 @@ local function CreateTab(name, sectionColor)
     end)
 
     TabBtn.MouseButton1Click:Connect(function()
-        CurrentTab = name -- Guarda la pestaña actual
+        CurrentTab = name 
         for n, p in pairs(Pages) do p.Visible = false end
         for btnName, btnObj in pairs(TabButtons) do 
             TweenService:Create(btnObj, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 105, 115)}):Play()
@@ -752,6 +831,12 @@ local function CreateTab(name, sectionColor)
     Pages[name] = Page
     TabButtons[name] = TabBtn
     return Page
+end
+
+-- Update Toggle UI helper
+local function UpdateToggleVisuals(configKey, OuterSwitch, InnerCircle, sectionColor)
+    TweenService:Create(OuterSwitch, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundColor3 = Config[configKey] and sectionColor or Color3.fromRGB(45, 48, 58)}):Play()
+    TweenService:Create(InnerCircle, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = Config[configKey] and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)}):Play()
 end
 
 local function AddToggle(page, text, configKey, sectionColor)
@@ -799,9 +884,19 @@ local function AddToggle(page, text, configKey, sectionColor)
     icc.Parent = InnerCircle
 
     OuterSwitch.MouseButton1Click:Connect(function()
+        if configKey == "AutoTPDeath" then
+            if not Config.AutoTPDeath then
+                ShowWarning("⚠️ ADVERTENCIA\nTeletransportarse rápido puede causar baneos. ¿Deseas activar el Auto TP?", 
+                function() 
+                    Config.AutoTPDeath = true 
+                    UpdateToggleVisuals(configKey, OuterSwitch, InnerCircle, sectionColor)
+                end, nil)
+                return
+            end
+        end
+        
         Config[configKey] = not Config[configKey]
-        TweenService:Create(OuterSwitch, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundColor3 = Config[configKey] and sectionColor or Color3.fromRGB(45, 48, 58)}):Play()
-        TweenService:Create(InnerCircle, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = Config[configKey] and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)}):Play()
+        UpdateToggleVisuals(configKey, OuterSwitch, InnerCircle, sectionColor)
     end)
 end
 
@@ -886,7 +981,8 @@ local function AddSlider(page, text, min, max, default, configKey, sectionColor)
     end)
 end
 
-local function AddButton(page, text, sectionColor)
+
+    local function AddButton(page, text, sectionColor)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(0.92, 0, 0, 36)
     Button.BackgroundColor3 = Color3.fromRGB(24, 27, 34)
@@ -1076,7 +1172,7 @@ WhatsAppBtn.MouseButton1Click:Connect(function()
     WhatsAppBtn.Text = "📲 CANAL DE WHATSAPP (COPIAR)"
 end)
 
-local TikTokBtn = Instance.new("TextButton")
+    local TikTokBtn = Instance.new("TextButton")
 TikTokBtn.Size = UDim2.new(1, -24, 0, 32)
 TikTokBtn.Position = UDim2.new(0, 12, 0, 68)
 TikTokBtn.BackgroundColor3 = Color3.fromRGB(26, 30, 38)
@@ -1091,10 +1187,10 @@ tkc.CornerRadius = UDim.new(0, 6)
 tkc.Parent = TikTokBtn
 
 TikTokBtn.MouseButton1Click:Connect(function()
-    setclipboard("softworks32")
-    TikTokBtn.Text = "¡USUARIO COPIADO! ✅"
+    setclipboard("https://discord.gg/8wPQt2VTE")
+    TikTokBtn.Text = "¡LINK COPIADO! ✅"
     task.wait(2)
-    TikTokBtn.Text = "🎵 TIKTOK OFICIAL (COPIAR)"
+    TikTokBtn.Text = "DISCORD (COPIAR)"
 end)
 
 -- Tarjeta de Novedades
@@ -1116,7 +1212,7 @@ news_stroke.Parent = NewsCard
 local NewsTitle = Instance.new("TextLabel")
 NewsTitle.Size = UDim2.new(1, -20, 0, 18)
 NewsTitle.Position = UDim2.new(0, 12, 0, 8)
-NewsTitle.Text = "NOVEDADES V1.0 📢"
+NewsTitle.Text = "NOVEDADES V1.3 📢"
 NewsTitle.Font = Enum.Font.GothamBold
 NewsTitle.TextSize = 11
 NewsTitle.TextColor3 = Color3.fromRGB(220, 225, 235)
@@ -1127,7 +1223,7 @@ NewsTitle.Parent = NewsCard
 local NewsBody = Instance.new("TextLabel")
 NewsBody.Size = UDim2.new(1, -24, 0, 42)
 NewsBody.Position = UDim2.new(0, 12, 0, 28)
-NewsBody.Text = "• Se corrigió el error del aimbot\n• Se añadió la función Hide Name\n• Menú optimizado sin animaciones molestas"
+NewsBody.Text = "• Se corrigió el error del ESP\n• Se añadió Auto TP de Muerte\n• se mejoró la seguridad"
 NewsBody.Font = Enum.Font.Gotham
 NewsBody.TextSize = 10
 NewsBody.TextColor3 = Color3.fromRGB(160, 165, 175)
@@ -1166,69 +1262,6 @@ local BtnDeathTP = AddButton(TabMisc, "TP Última Muerte ☠️", Theme.Misc)
 AddToggle(TabMisc, "Auto TP Muerte ☠️", "AutoTPDeath", Theme.Misc) 
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
-
-
--- Advertencia UI para TP
-local WarningFrame = Instance.new("Frame")
-WarningFrame.Size = UDim2.new(0, 320, 0, 130)
-WarningFrame.Position = UDim2.new(0.5, -160, 0.5, -65)
-WarningFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
-WarningFrame.BorderSizePixel = 0
-WarningFrame.Visible = false
-WarningFrame.ZIndex = 50
-WarningFrame.Parent = ScreenGui 
-
-local WarningCorner = Instance.new("UICorner")
-WarningCorner.CornerRadius = UDim.new(0, 10)
-WarningCorner.Parent = WarningFrame
-
-local WarningStroke = Instance.new("UIStroke")
-WarningStroke.Color = Color3.fromRGB(255, 80, 80) 
-WarningStroke.Thickness = 1.5
-WarningStroke.Parent = WarningFrame
-
-local WarningText = Instance.new("TextLabel")
-WarningText.Size = UDim2.new(1, -20, 0.6, 0)
-WarningText.Position = UDim2.new(0, 10, 0, 10)
-WarningText.Text = "⚠️ ADVERTENCIA\nEsta función puede ocasionar baneo a tu cuenta.\nÚsala bajo tu propio riesgo."
-WarningText.Font = Enum.Font.GothamBold
-WarningText.TextSize = 13
-WarningText.TextColor3 = Color3.fromRGB(220, 220, 220)
-WarningText.TextWrapped = true
-WarningText.BackgroundTransparency = 1
-WarningText.ZIndex = 51
-WarningText.Parent = WarningFrame
-
-local BtnCancel = Instance.new("TextButton")
-BtnCancel.Size = UDim2.new(0.4, 0, 0, 32)
-BtnCancel.Position = UDim2.new(0.06, 0, 0.65, 0)
-BtnCancel.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
-BtnCancel.Text = "Cancelar"
-BtnCancel.Font = Enum.Font.GothamBold
-BtnCancel.TextColor3 = Color3.fromRGB(255, 255, 255)
-BtnCancel.TextSize = 12
-BtnCancel.ZIndex = 51
-BtnCancel.Parent = WarningFrame
-
-local BtnCancelCorner = Instance.new("UICorner")
-BtnCancelCorner.CornerRadius = UDim.new(0, 6)
-BtnCancelCorner.Parent = BtnCancel
-
-local BtnConfirm = Instance.new("TextButton")
-BtnConfirm.Size = UDim2.new(0.4, 0, 0, 32)
-BtnConfirm.Position = UDim2.new(0.54, 0, 0.65, 0)
-BtnConfirm.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-BtnConfirm.Text = "Confirmar"
-BtnConfirm.Font = Enum.Font.GothamBold
-BtnConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
-BtnConfirm.TextSize = 12
-BtnConfirm.ZIndex = 51
-BtnConfirm.Parent = WarningFrame
-
-local BtnConfirmCorner = Instance.new("UICorner")
-BtnConfirmCorner.CornerRadius = UDim.new(0, 6)
-BtnConfirmCorner.Parent = BtnConfirm
-
 -- Lógica de Interacciones
 BtnServerHop.MouseButton1Click:Connect(function()
     BtnServerHop.Text = "Buscando servidor... 🔍"
@@ -1265,29 +1298,22 @@ end)
 
 BtnDeathTP.MouseButton1Click:Connect(function()
     if Config.DeathPos then
-        WarningFrame.Visible = true 
+        ShowWarning("⚠️ ADVERTENCIA\nEsta función puede ocasionar baneo a tu cuenta.\nÚsala bajo tu propio riesgo.", 
+        function()
+            local char, hum, root = GetSafeCharacter()
+            if root then
+                root.CFrame = CFrame.new(Config.DeathPos + Vector3.new(0, 3, 0))
+                BtnDeathTP.Text = "¡Teletransportado! ⚡"
+                task.wait(2)
+                BtnDeathTP.Text = "TP Última Muerte ☠️"
+            end
+        end, nil)
     else
         BtnDeathTP.Text = "No hay registro ❌"
         task.wait(2)
         BtnDeathTP.Text = "TP Última Muerte ☠️"
     end
 end)
-
-BtnCancel.MouseButton1Click:Connect(function()
-    WarningFrame.Visible = false 
-end)
-
-BtnConfirm.MouseButton1Click:Connect(function()
-    WarningFrame.Visible = false 
-    local char, hum, root = GetSafeCharacter()
-    if Config.DeathPos and char and root then
-        root.CFrame = CFrame.new(Config.DeathPos + Vector3.new(0, 3, 0))
-        BtnDeathTP.Text = "¡Teletransportado! ⚡"
-        task.wait(2)
-        BtnDeathTP.Text = "TP Última Muerte ☠️"
-    end
-end)
-
 
 -- Visibilidad y Objetivos
 local function VerificarParedVisibilidad(objetivoParte)
@@ -1355,51 +1381,49 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-
-
---ESP ARMÁS 
+-- ESP ARMAS
 local WeaponColors = {
     -- DORADO 
-    ["AK47"] = Color3.fromRGB(255, 215, 0),[span_0](start_span)[span_0](end_span)
-    ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),[span_1](start_span)[span_1](end_span)
-    ["AK47-لا تستخدم"] = Color3.fromRGB(255, 215, 0), -- Dorado
-    ["M16"] = Color3.fromRGB(255, 215, 0),[span_2](start_span)[span_2](end_span)
-    ["MP5"] = Color3.fromRGB(255, 215, 0),[span_3](start_span)[span_3](end_span)
-    ["Remington"] = Color3.fromRGB(255, 215, 0),[span_4](start_span)[span_4](end_span)
-    ["RPG"] = Color3.fromRGB(255, 215, 0),[span_5](start_span)[span_5](end_span)
-    ["RPGPermanent"] = Color3.fromRGB(255, 215, 0), -- Dorado
-    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),[span_6](start_span)[span_6](end_span)
-    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),[span_7](start_span)[span_7](end_span)
-    ["RightGrip"] = Color3.fromRGB(255, 215, 0),[span_8](start_span)[span_8](end_span)
+    ["AK47"] = Color3.fromRGB(255, 215, 0),
+    ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
+    ["AK47-لا تستخدم"] = Color3.fromRGB(255, 215, 0),
+    ["M16"] = Color3.fromRGB(255, 215, 0),
+    ["MP5"] = Color3.fromRGB(255, 215, 0),
+    ["Remington"] = Color3.fromRGB(255, 215, 0),
+    ["RPG"] = Color3.fromRGB(255, 215, 0),
+    ["RPGPermanent"] = Color3.fromRGB(255, 215, 0),
+    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),
+    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
 
     -- ROJO
-    ["Anaconda"] = Color3.fromRGB(200, 0, 0),[span_9](start_span)[span_9](end_span)
-    ["M249"] = Color3.fromRGB(255, 0, 0), -- Rojo
+    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
+    ["M249"] = Color3.fromRGB(255, 0, 0),
 
     --  VERDE
-    ["G3"] = Color3.fromRGB(46, 204, 113), -- Verde
+    ["G3"] = Color3.fromRGB(46, 204, 113),
 
     -- AZUL CLARO 
-    ["Glock"] = Color3.fromRGB(52, 152, 219), -- Azul
-    ["P226"] = Color3.fromRGB(52, 152, 219), -- Azul
+    ["Glock"] = Color3.fromRGB(52, 152, 219),
+    ["P226"] = Color3.fromRGB(52, 152, 219),
 
     --  AZUL FUERTE 
-    ["Uzi"] = Color3.fromRGB(0, 70, 255), -- Azul fuerte
-    ["LongMagGlock"] = Color3.fromRGB(0, 70, 255), -- Azul fuerte
+    ["Uzi"] = Color3.fromRGB(0, 70, 255),
+    ["LongMagGlock"] = Color3.fromRGB(0, 70, 255),
 
     -- PÚRPURA
-    ["Draco"] = Color3.fromRGB(160, 32, 240),[span_10](start_span)[span_10](end_span)
-    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),[span_11](start_span)[span_11](end_span)
-    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),[span_12](start_span)[span_12](end_span)
-    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),[span_13](start_span)[span_13](end_span)
-    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),[span_14](start_span)[span_14](end_span)
-    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),[span_15](start_span)[span_15](end_span)
+    ["Draco"] = Color3.fromRGB(160, 32, 240),
+    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
+    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
+    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
+    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
+    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
 
     --  TRAPEADORES ESPECIALES
-    ["Mop"] = Color3.fromRGB(128, 128, 128),[span_16](start_span)[span_16](end_span)
-    ["SilverMop"] = Color3.fromRGB(192, 192, 192),[span_17](start_span)[span_17](end_span)
-    ["GoldMop"] = Color3.fromRGB(255, 215, 0),[span_18](start_span)[span_18](end_span)
-    ["DiamondMop"] = Color3.fromRGB(0, 235, 255),[span_19](start_span)[span_19](end_span)
+    ["Mop"] = Color3.fromRGB(128, 128, 128),
+    ["SilverMop"] = Color3.fromRGB(192, 192, 192),
+    ["GoldMop"] = Color3.fromRGB(255, 215, 0),
+    ["DiamondMop"] = Color3.fromRGB(0, 235, 255),
     ["SapphireMop"] = Color3.fromRGB(15, 82, 186),
     ["EmeraldMop"] = Color3.fromRGB(80, 220, 100),
 
@@ -1409,7 +1433,7 @@ local WeaponColors = {
     ["FishingRodUltimate"] = Color3.fromRGB(144, 238, 144), 
     ["WormtecRegular"] = Color3.fromRGB(144, 238, 144), 
     ["WormtecUltimate"] = Color3.fromRGB(144, 238, 144) 
-    }
+}
     
 local function GetPlayerTool(player)
     if player.Character then
@@ -1464,8 +1488,19 @@ local function CreateESP(player)
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") and player.Character:FindFirstChildOfClass("Humanoid") then
-            local character = player.Character
+        if not player or not player.Parent then
+            box:Remove()
+            nameText:Remove()
+            distText:Remove()
+            gunText:Remove()
+            healthBar:Remove()
+            traceLine:Remove()
+            if connection then connection:Disconnect() end
+            return
+        end
+
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Head") and character:FindFirstChildOfClass("Humanoid") and character:FindFirstChildOfClass("Humanoid").Health > 0 then
             local rootPart = character.HumanoidRootPart
             local head = character.Head
             local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -1557,44 +1592,17 @@ local function CreateESP(player)
                 traceLine.Visible = false
             end
         else
-            box:Destroy()
-            nameText:Destroy()
-            distText:Destroy()
-            gunText:Destroy()
-            healthBar:Destroy()
-            traceLine:Destroy()
-            connection:Disconnect()
+            box.Visible = false
+            nameText.Visible = false
+            distText.Visible = false
+            gunText.Visible = false
+            healthBar.Visible = false
+            traceLine.Visible = false
         end
     end)
-end
-
-
+    end
 
 -- M Jugadores
-local function MonitorPlayer(player)
-    if player == LocalPlayer then return end
-    player.CharacterAdded:Connect(function(character)
-        local root = character:WaitForChild("HumanoidRootPart", 10)
-        local head = character:WaitForChild("Head", 10)
-        local humanoid = character:WaitForChild("Humanoid", 10)
-        
-        if root and head and humanoid then
-            task.wait(0.2) 
-            CreateESP(player)
-        end
-    end)
-
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        CreateESP(player)
-    end
-end
-
-Players.PlayerAdded:Connect(MonitorPlayer)
-
-for _, player in pairs(Players:GetPlayers()) do
-    MonitorPlayer(player)
-end
-
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         CreateESP(player)
@@ -1602,16 +1610,13 @@ for _, player in pairs(Players:GetPlayers()) do
 end
 
 Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if player ~= LocalPlayer then
-            player.Character:WaitForChild("HumanoidRootPart", 5)
-            player.Character:WaitForChild("UpperTorso", 5)
-            CreateESP(player)
-        end
-    end)
+    if player ~= LocalPlayer then
+        CreateESP(player)
+    end
 end)
 
--- busca la  Última Muerte
+
+-- Busca la Última Muerte y Funcionalidad Auto TP
 local function TrackDeath(char)
     local hum = char:WaitForChild("Humanoid", 5)
     local root = char:WaitForChild("HumanoidRootPart", 5)
@@ -1623,10 +1628,25 @@ local function TrackDeath(char)
     end
 end
 
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    TrackDeath(char)
+    
+    -- Lógica para el Auto TP al revivir
+    if Config.AutoTPDeath and Config.DeathPos then
+        task.spawn(function()
+            local root = char:WaitForChild("HumanoidRootPart", 5)
+            if root then
+                task.wait(0.5) -- Pequeña pausa para evitar glitches al spawnear
+                root.CFrame = CFrame.new(Config.DeathPos + Vector3.new(0, 3, 0))
+            end
+        end)
+    end
+end)
+
 if Character then
     TrackDeath(Character)
 end
-LocalPlayer.CharacterAdded:Connect(TrackDeath)
 
 -- ESP de Armas en el Mapa
 local function CreateDroppedGunESP(tool)
@@ -1654,7 +1674,14 @@ local function CreateDroppedGunESP(tool)
 
     local dropConnection
     dropConnection = RunService.RenderStepped:Connect(function()
-        if Config.ESPDroppedGuns and tool.Parent == workspace and handle then
+        if not tool or not tool.Parent or tool.Parent ~= workspace then
+            lootText:Remove()
+            lootBox:Remove()
+            if dropConnection then dropConnection:Disconnect() end
+            return
+        end
+
+        if Config.ESPDroppedGuns and handle then
             local vector, onScreen = Camera:WorldToViewportPoint(handle.Position)
             
             if onScreen then
@@ -1675,12 +1702,6 @@ local function CreateDroppedGunESP(tool)
         else
             lootBox.Visible = false
             lootText.Visible = false
-            
-            if not tool.Parent or tool.Parent ~= workspace then
-                lootText:Remove()
-                lootBox:Remove()
-                dropConnection:Disconnect()
-            end
         end
     end)
 end
@@ -1716,7 +1737,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- SPEED HACK 
+    -- SPEED HACK 
 RunService.Heartbeat:Connect(function()
     local char, hum, root = GetSafeCharacter()
     if char and Config.SpeedEnabled then
@@ -1807,8 +1828,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-
-  --HODE NAME      
+  -- HIDE NAME      
     if Character then
         local hum = Character:FindFirstChildOfClass("Humanoid")
         if hum then
@@ -1828,5 +1848,5 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-    
+
 end
