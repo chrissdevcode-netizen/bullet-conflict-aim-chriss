@@ -1383,19 +1383,9 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-        local objetivo = ObtenerEnemigoMasCercano()
-        if objetivo then
-            FOVCircle.Color = Color3.fromRGB(0, 255, 0) 
-            if Config.AimbotEnabled then
-                local currentPos = Camera.CFrame.Position
-                local targetCFrame = CFrame.lookAt(currentPos, objetivo.Position)
-                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 0.6)
-            end
-        else
-            FOVCircle.Color = Color3.fromRGB(255, 0, 0) 
-        end
-    end
-end)
+
+
+
 
 -- ESP ARMAS
 local WeaponColors = {
