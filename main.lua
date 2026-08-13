@@ -20,13 +20,19 @@ local Camera = workspace.CurrentCamera
 
 -- FOV Circle 
 local FOVCircle
-pcall(function()
-    FOVCircle = Drawing.new("Circle")
-    FOVCircle.Visible = false
-    FOVCircle.Thickness = 1.5
-    FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-    FOVCircle.Filled = false
+task.spawn(function()
+    pcall(function()
+        if Drawing and Drawing.new then
+            FOVCircle = Drawing.new("Circle")
+            FOVCircle.Visible = false
+            FOVCircle.Thickness = 1.5
+            FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+            FOVCircle.Filled = false
+        end
+    end)
 end)
+
+
 
 -- Configuración de Estado General
 local Config = {
