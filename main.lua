@@ -1357,30 +1357,60 @@ end)
 
 
 
---  ESP DE LAS ARMÁS INCLUYENDO COLORES 
+--ESP ARMÁS 
 local WeaponColors = {
-    ["AK47"] = Color3.fromRGB(255, 215, 0),
-    ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
-    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
-    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
-    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
-    ["DiamondMop"] = Color3.fromRGB(160, 32, 240),
-    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
-    ["Draco"] = Color3.fromRGB(160, 32, 240),
-    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
-    ["GoldMop"] = Color3.fromRGB(0, 122, 255),
-    ["M16"] = Color3.fromRGB(255, 215, 0),
-    ["Mop"] = Color3.fromRGB(128, 128, 128),
-    ["MP5"] = Color3.fromRGB(255, 215, 0),
-    ["Remington"] = Color3.fromRGB(255, 215, 0),
-    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
-    ["RPG"] = Color3.fromRGB(255, 215, 0),
-    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
-    ["SilverMop"] = Color3.fromRGB(160, 32, 240),
-    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
-    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)
-}
+    -- DORADO 
+    ["AK47"] = Color3.fromRGB(255, 215, 0),[span_0](start_span)[span_0](end_span)
+    ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),[span_1](start_span)[span_1](end_span)
+    ["AK47-لا تستخدم"] = Color3.fromRGB(255, 215, 0), -- Dorado
+    ["M16"] = Color3.fromRGB(255, 215, 0),[span_2](start_span)[span_2](end_span)
+    ["MP5"] = Color3.fromRGB(255, 215, 0),[span_3](start_span)[span_3](end_span)
+    ["Remington"] = Color3.fromRGB(255, 215, 0),[span_4](start_span)[span_4](end_span)
+    ["RPG"] = Color3.fromRGB(255, 215, 0),[span_5](start_span)[span_5](end_span)
+    ["RPGPermanent"] = Color3.fromRGB(255, 215, 0), -- Dorado
+    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),[span_6](start_span)[span_6](end_span)
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),[span_7](start_span)[span_7](end_span)
+    ["RightGrip"] = Color3.fromRGB(255, 215, 0),[span_8](start_span)[span_8](end_span)
 
+    -- ROJO
+    ["Anaconda"] = Color3.fromRGB(200, 0, 0),[span_9](start_span)[span_9](end_span)
+    ["M249"] = Color3.fromRGB(255, 0, 0), -- Rojo
+
+    --  VERDE
+    ["G3"] = Color3.fromRGB(46, 204, 113), -- Verde
+
+    -- AZUL CLARO 
+    ["Glock"] = Color3.fromRGB(52, 152, 219), -- Azul
+    ["P226"] = Color3.fromRGB(52, 152, 219), -- Azul
+
+    --  AZUL FUERTE 
+    ["Uzi"] = Color3.fromRGB(0, 70, 255), -- Azul fuerte
+    ["LongMagGlock"] = Color3.fromRGB(0, 70, 255), -- Azul fuerte
+
+    -- PÚRPURA
+    ["Draco"] = Color3.fromRGB(160, 32, 240),[span_10](start_span)[span_10](end_span)
+    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),[span_11](start_span)[span_11](end_span)
+    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),[span_12](start_span)[span_12](end_span)
+    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),[span_13](start_span)[span_13](end_span)
+    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),[span_14](start_span)[span_14](end_span)
+    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),[span_15](start_span)[span_15](end_span)
+
+    --  TRAPEADORES ESPECIALES
+    ["Mop"] = Color3.fromRGB(128, 128, 128),[span_16](start_span)[span_16](end_span)
+    ["SilverMop"] = Color3.fromRGB(192, 192, 192),[span_17](start_span)[span_17](end_span)
+    ["GoldMop"] = Color3.fromRGB(255, 215, 0),[span_18](start_span)[span_18](end_span)
+    ["DiamondMop"] = Color3.fromRGB(0, 235, 255),[span_19](start_span)[span_19](end_span)
+    ["SapphireMop"] = Color3.fromRGB(15, 82, 186),
+    ["EmeraldMop"] = Color3.fromRGB(80, 220, 100),
+
+    --  HERRAMIENTAS DE PESCA (VERDE BAJO)
+    ["FishingRod"] = Color3.fromRGB(144, 238, 144), 
+    ["FishingRodPro"] = Color3.fromRGB(144, 238, 144),
+    ["FishingRodUltimate"] = Color3.fromRGB(144, 238, 144), 
+    ["WormtecRegular"] = Color3.fromRGB(144, 238, 144), 
+    ["WormtecUltimate"] = Color3.fromRGB(144, 238, 144) 
+    }
+    
 local function GetPlayerTool(player)
     if player.Character then
         local tool = player.Character:FindFirstChildOfClass("Tool")
