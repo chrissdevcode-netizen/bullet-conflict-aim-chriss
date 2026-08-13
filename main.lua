@@ -15,8 +15,10 @@ end
 LocalPlayer.CharacterAdded:Connect(function(newChar)
     Character = newChar
 end)
+
 local Camera = workspace.CurrentCamera
---FOV Circle 
+
+-- FOV Circle 
 local FOVCircle
 pcall(function()
     FOVCircle = Drawing.new("Circle")
@@ -25,9 +27,6 @@ pcall(function()
     FOVCircle.Color = Color3.fromRGB(255, 255, 255)
     FOVCircle.Filled = false
 end)
-
-
-
 
 -- Configuración de Estado General
 local Config = {
@@ -47,7 +46,7 @@ local Config = {
     FOVEnabled = false, 
     FOVRadius = 100,
     WallCheck = true,
-    TargetPart ="HumanoidRootPart",
+    TargetPart = "HumanoidRootPart",
     
     -- Visuals 
     ESPBox = false, 
@@ -62,12 +61,6 @@ local Config = {
     LockUI = false
 }
 
-
-
-
-
-
-
 -- Paleta de Colores por Sección
 local Theme = {
     Main = Color3.fromRGB(160, 80, 255), 
@@ -76,14 +69,13 @@ local Theme = {
     Misc = Color3.fromRGB(160, 80, 255)
 }
  
---  Función de arrastrar 
+-- Función de arrastrar 
 local function MakeSmoothDrag(frame, dragHandle)
     local dragging = false
     local dragInput, dragStart, startPos
     local targetPos = frame.Position
 
     dragHandle.InputBegan:Connect(function(input)
-    
         if Config.LockUI then return end 
 
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -113,6 +105,9 @@ local function MakeSmoothDrag(frame, dragHandle)
         frame.Position = frame.Position:Lerp(targetPos, 0.15)
     end)
 end
+
+
+
 
 
 
