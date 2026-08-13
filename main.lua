@@ -331,10 +331,6 @@ CheckBtn.MouseButton1Click:Connect(IniciarValidacion)
 
 function IniciarScriptPrincipal()
 
-
-
-
-
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -568,7 +564,7 @@ OpenBtnFrame.Name = "OpenBtnFrame"
 OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56) 
 OpenBtnFrame.Position = UDim2.new(0.03, 0, 0.5, -28) 
 OpenBtnFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
-OpenBtnFrame.Visible = true -- Inicia visible por defecto
+OpenBtnFrame.Visible = true 
 OpenBtnFrame.ClipsDescendants = true
 OpenBtnFrame.Parent = ScreenGui
 
@@ -677,7 +673,6 @@ OpenBtn.MouseButton1Click:Connect(function()
             end
         end)
         
-        -- Abre la última pestaña registrada
         if Pages[CurrentTab] then
             Pages[CurrentTab].Visible = true
         end
@@ -704,7 +699,8 @@ OpenBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Sistema de creación de elementos UI
+
+  -- Sistema de creación de elementos UI
 local function CreateTab(name, sectionColor)
     local TabBtn = Instance.new("TextButton")
     TabBtn.Size = UDim2.new(1, 0, 0, 32)
@@ -740,7 +736,7 @@ local function CreateTab(name, sectionColor)
     end)
 
     TabBtn.MouseButton1Click:Connect(function()
-        CurrentTab = name -- Guarda la pestaña actual
+        CurrentTab = name 
         for n, p in pairs(Pages) do p.Visible = false end
         for btnName, btnObj in pairs(TabButtons) do 
             TweenService:Create(btnObj, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 105, 115)}):Play()
@@ -885,7 +881,8 @@ local function AddSlider(page, text, min, max, default, configKey, sectionColor)
             sliding = false
         end
     end)
-end
+ end
+
 
 local function AddButton(page, text, sectionColor)
     local Button = Instance.new("TextButton")
@@ -1029,7 +1026,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Tarjeta de Redes Sociales
+  -- Tarjeta de Redes Sociales
 local SocialCard = Instance.new("Frame")
 SocialCard.Size = UDim2.new(0.94, 0, 0, 110)
 SocialCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -1168,8 +1165,7 @@ AddToggle(TabMisc, "Auto TP Muerte ☠️", "AutoTPDeath", Theme.Misc)
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
 
-
--- Advertencia UI para TP
+    -- Advertencia UI para TP
 local WarningFrame = Instance.new("Frame")
 WarningFrame.Size = UDim2.new(0, 320, 0, 130)
 WarningFrame.Position = UDim2.new(0.5, -160, 0.5, -65)
@@ -1357,8 +1353,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
-
---  ESP DE LAS ARMÁS INCLUYENDO COLORES 
+  -- ESP DE LAS ARMAS
 local WeaponColors = {
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
@@ -1537,12 +1532,9 @@ local function CreateESP(player)
             connection:Disconnect()
         end
     end)
-end
+ end
 
-
-
--- M Jugadores
-local function MonitorPlayer(player)
+ local function MonitorPlayer(player)
     if player == LocalPlayer then return end
     player.CharacterAdded:Connect(function(character)
         local root = character:WaitForChild("HumanoidRootPart", 10)
@@ -1572,17 +1564,7 @@ for _, player in pairs(Players:GetPlayers()) do
     end
 end
 
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if player ~= LocalPlayer then
-            player.Character:WaitForChild("HumanoidRootPart", 5)
-            player.Character:WaitForChild("UpperTorso", 5)
-            CreateESP(player)
-        end
-    end)
-end)
-
--- busca la  Última Muerte
+-- Búsqueda de Última Muerte
 local function TrackDeath(char)
     local hum = char:WaitForChild("Humanoid", 5)
     local root = char:WaitForChild("HumanoidRootPart", 5)
@@ -1700,7 +1682,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- FLY
+   -- FLY
 local FlyAttachment, AlignOri, LinearVel
 RunService.RenderStepped:Connect(function()
     local char, hum, root = GetSafeCharacter()
@@ -1759,7 +1741,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- SALTÓ INFINITO 
+-- SALTO INFINITO 
 UserInputService.JumpRequest:Connect(function()
     if Config.InfJump then
         local char, hum, root = GetSafeCharacter()
@@ -1769,7 +1751,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- SPIN BOT
+-- SPIN BOT Y HIDE NAME
 RunService.RenderStepped:Connect(function()
     if Config.SpinBot then
         local char, hum, root = GetSafeCharacter()
@@ -1778,8 +1760,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-
-  --HODE NAME      
     if Character then
         local hum = Character:FindFirstChildOfClass("Humanoid")
         if hum then
@@ -1794,8 +1774,12 @@ RunService.RenderStepped:Connect(function()
             if obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
                 if Config.HideName then
                     obj.Enabled = false
+                else
+                    obj.Enabled = true
                 end
             end
         end
     end
 end)
+
+end 
