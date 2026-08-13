@@ -366,7 +366,9 @@ pcall(function()
     FOVCircle.Thickness = 1.5
     FOVCircle.Color = Color3.fromRGB(255, 255, 255)
     FOVCircle.Filled = false
+    FOVCircle.NumSides = 64 
 end)
+    
 
 -- Configuración General
 local Config = {
@@ -1258,7 +1260,6 @@ AddToggle(TabVisuals, "ESP Armas Tiradas", "ESPDroppedGuns", Theme.Visuals)
 
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
-local BtnDeathTP = AddButton(TabMisc, "TP Última Muerte ☠️", Theme.Misc)
 AddToggle(TabMisc, "Auto TP Muerte ☠️", "AutoTPDeath", Theme.Misc) 
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
@@ -1351,22 +1352,37 @@ local function ObtenerEnemigoMasCercano()
 end
 
 RunService.RenderStepped:Connect(function()
-    if not Camera or not workspace.CurrentCamera then
+    if not Camera or not workspace.CurrentCamera or Camera.ViewportSize.X == 0 then
         Camera = workspace.CurrentCamera
         return
     end
     
     local centroPantalla = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     
-    if Config.FOVEnabled then
-        FOVCircle.Visible = true
-        FOVCircle.Radius = Config.FOVRadius
-        FOVCircle.Position = centroPantalla
-    else
-        FOVCircle.Visible = false
+    if FOVCircle then
+        if Config.FOVEnabled then
+            FOVCircle.Visible = true
+            FOVCircle.Radius = Config.FOVRadius
+            FOVCircle.Position = centroPantalla
+        else
+            FOVCircle.Visible = false
+        end
+        
+        if Config.AimbotEnabled or Config.FOVEnabled then
+            local objetivo = ObtenerEnemigoMasCercano()
+            if objetivo then
+                FOVCircle.Color = Color3.fromRGB(0, 255, 0) 
+                if Config.AimbotEnabled then
+                    local currentPos = Camera.CFrame.Position
+                    local targetCFrame = CFrame.lookAt(currentPos, objetivo.Position)
+                    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 0.6)
+                end
+            else
+                FOVCircle.Color = Color3.fromRGB(255, 0, 0) 
+            end
+        end
     end
-    
-    if Config.AimbotEnabled or Config.FOVEnabled then
+end)
         local objetivo = ObtenerEnemigoMasCercano()
         if objetivo then
             FOVCircle.Color = Color3.fromRGB(0, 255, 0) 
@@ -1600,23 +1616,28 @@ local function CreateESP(player)
             traceLine.Visible = false
         end
     end)
-    end
+ end
 
--- M Jugadores
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
+-- M Jugadores (ESP AUTO-RECARGABLE) 🔥
+local function SetupESP(player)
+    if player == LocalPlayer then return end
+    
+    player.CharacterAdded:Connect(function(char)
+        task.wait(0.5) 
+        CreateESP(player)
+    end)
+    
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         CreateESP(player)
     end
 end
 
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        CreateESP(player)
-    end
-end)
+for _, player in pairs(Players:GetPlayers()) do
+    SetupESP(player)
+end
+Players.PlayerAdded:Connect(SetupESP)
 
-
--- Busca la Última Muerte y Funcionalidad Auto TP
+-- Busca la Última Muerte y Funcionalidad Auto TP ☠️
 local function TrackDeath(char)
     local hum = char:WaitForChild("Humanoid", 5)
     local root = char:WaitForChild("HumanoidRootPart", 5)
@@ -1632,12 +1653,12 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     Character = char
     TrackDeath(char)
     
-    -- Lógica para el Auto TP al revivir
+    -- Se teletransporta al revivir si el switch está activado
     if Config.AutoTPDeath and Config.DeathPos then
         task.spawn(function()
             local root = char:WaitForChild("HumanoidRootPart", 5)
             if root then
-                task.wait(0.5) -- Pequeña pausa para evitar glitches al spawnear
+                task.wait(0.5) 
                 root.CFrame = CFrame.new(Config.DeathPos + Vector3.new(0, 3, 0))
             end
         end)
@@ -1648,7 +1669,7 @@ if Character then
     TrackDeath(Character)
 end
 
--- ESP de Armas en el Mapa
+-- ESP de Armas en el Mapa 🔫
 local function CreateDroppedGunESP(tool)
     if not tool:IsA("Tool") then return end
     
@@ -1710,6 +1731,8 @@ for _, obj in pairs(workspace:GetChildren()) do
     CreateDroppedGunESP(obj)
 end
 workspace.ChildAdded:Connect(CreateDroppedGunESP)
+    
+
 
 -- BYPASS
 RunService.Stepped:Connect(function()
