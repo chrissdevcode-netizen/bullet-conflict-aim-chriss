@@ -1368,33 +1368,8 @@ local function GetPlayerTool(player)
     return nil
 end
 
--- ==========================================
--- ☀️ LÓGICA DEL HILBRANOSE (FULLBRIGHT) ☀️
--- Va totalmente separado del ESP para no dar lag
--- ==========================================
-local Lighting = game:GetService("Lighting")
-local DefaultAmbient = Lighting.Ambient
-local DefaultOutdoor = Lighting.OutdoorAmbient
-
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        if Config.Fullbright then
-            Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-            Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-            Lighting.ClockTime = 14
-        else
-            Lighting.Ambient = DefaultAmbient
-            Lighting.OutdoorAmbient = DefaultOutdoor
-        end
-    end)
-end)
-
-
-
---  LÓGICA ESP 
+-- LÓGICA ESP 
 local function CreateESP(player)
-  
-        --  ESP BOX 
     local highlight = Instance.new("Highlight")
     highlight.FillTransparency = 1 
     highlight.OutlineColor = Color3.fromRGB(255, 0, 0) 
@@ -1404,7 +1379,6 @@ local function CreateESP(player)
     local success = pcall(function() highlight.Parent = game:GetService("CoreGui") end)
     if not success then highlight.Parent = game.Workspace end
 
-    --  TEXTOS Y LÍNEAS 
     local nameText = Drawing.new("Text")
     nameText.Visible = false
     nameText.Center = true
@@ -1439,8 +1413,8 @@ local function CreateESP(player)
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-        -- Verificación estricta
-        if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") or not player.Character:FindFirstChild("Head") then
+        -- 1. SOLO destruimos todo si el jugador SE VA DEL JUEGO
+        if not player or not player.Parent then
             highlight:Destroy()
             nameText:Remove()
             distText:Remove()
@@ -1452,13 +1426,13 @@ local function CreateESP(player)
         end
 
         local character = player.Character
-        local rootPart = character.HumanoidRootPart
-        local head = character.Head
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+        local head = character and character:FindFirstChild("Head")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
         local camera = workspace.CurrentCamera
 
-        
-        if not camera or not humanoid or humanoid.Health <= 0 then
+        -- 2. Si está muerto o respawneando, SOLO OCULTAMOS las cosas, NO LAS DESTRUIMOS
+        if not camera or not character or not rootPart or not head or not humanoid or humanoid.Health <= 0 then
             highlight.Enabled = false
             highlight.Adornee = nil
             nameText.Visible = false
@@ -1469,91 +1443,85 @@ local function CreateESP(player)
             return
         end
 
-        
+        -- Si llegamos aquí, el jugador está vivo y coleando
         highlight.Adornee = character
         highlight.Enabled = Config.ESPBox
 
         local vector, onScreen = camera:WorldToViewportPoint(rootPart.Position)
         
+        -- Si está en nuestra pantalla, dibujamos los textos y líneas
         if onScreen then
             local distance = (camera.CFrame.Position - rootPart.Position).Magnitude
-            local topPos, topOnScreen = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
-            local bottomPos, bottomOnScreen = camera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 2.5, 0))
+            local topPos = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
+            local bottomPos = camera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 2.5, 0))
 
-            if topOnScreen and bottomOnScreen then
-                local boxHeight = math.abs(topPos.Y - bottomPos.Y)
-                local boxWidth = boxHeight * 0.55 
+            local boxHeight = math.abs(topPos.Y - bottomPos.Y)
+            local boxWidth = boxHeight * 0.55 
 
-                -- ESP NAME
-                if Config.ESPName then
-                    nameText.Visible = true
-                    nameText.Position = Vector2.new(vector.X, topPos.Y - 16)
-                    nameText.Text = player.Name
-                else
-                    nameText.Visible = false
-                end
+            -- ESP NAME
+            if Config.ESPName then
+                nameText.Visible = true
+                nameText.Position = Vector2.new(vector.X, topPos.Y - 16)
+                nameText.Text = player.Name
+            else
+                nameText.Visible = false
+            end
 
-                -- ESP DISTANCIA
-                local yOffset = bottomPos.Y + 2
-                if Config.ESPDist then
-                    distText.Visible = true
-                    distText.Position = Vector2.new(vector.X, yOffset)
-                    distText.Text = string.format("[%d studs]", math.floor(distance))
-                    yOffset = yOffset + 12
-                else
-                    distText.Visible = false
-                end
+            -- ESP DISTANCIA
+            local yOffset = bottomPos.Y + 2
+            if Config.ESPDist then
+                distText.Visible = true
+                distText.Position = Vector2.new(vector.X, yOffset)
+                distText.Text = string.format("[%d studs]", math.floor(distance))
+                yOffset = yOffset + 12
+            else
+                distText.Visible = false
+            end
 
-                -- ESP GUN
-                if Config.ESPGun then
-                    local currentTool = GetPlayerTool(player)
-                    if currentTool then
-                        local weaponName = currentTool.Name
-                        gunText.Visible = true
-                        gunText.Color = WeaponColors[weaponName] or Color3.fromRGB(255, 255, 255)
-                        
-                        if Config.ESPGunDist then
-                            gunText.Text = string.format("%s [%d studs]", weaponName, math.floor(distance))
-                        else
-                            gunText.Text = weaponName
-                        end
-                        gunText.Position = Vector2.new(vector.X, yOffset)
+            -- ESP GUN
+            if Config.ESPGun then
+                local currentTool = GetPlayerTool(player)
+                if currentTool then
+                    local weaponName = currentTool.Name
+                    gunText.Visible = true
+                    gunText.Color = WeaponColors[weaponName] or Color3.fromRGB(255, 255, 255)
+                    
+                    if Config.ESPGunDist then
+                        gunText.Text = string.format("%s [%d studs]", weaponName, math.floor(distance))
                     else
-                        gunText.Visible = false
+                        gunText.Text = weaponName
                     end
+                    gunText.Position = Vector2.new(vector.X, yOffset)
                 else
                     gunText.Visible = false
                 end
-
-                -- ESP HEALTH BAR
-                if Config.ESPHealth then
-                    healthBar.Visible = true
-                    local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                    local barX = vector.X - (boxWidth / 2) - 5
-                    
-                    healthBar.From = Vector2.new(barX, bottomPos.Y)
-                    healthBar.To = Vector2.new(barX, bottomPos.Y - (boxHeight * healthPercentage))
-                    healthBar.Color = Color3.fromHSV((healthPercentage * 120) / 360, 1, 1)
-                else
-                    healthBar.Visible = false
-                end
-
-                -- TRACES 
-                if Config.Traces then
-                    traceLine.Visible = true
-                    traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
-                    traceLine.To = Vector2.new(vector.X, topPos.Y)
-                else
-                    traceLine.Visible = false
-                end
             else
-                nameText.Visible = false
-                distText.Visible = false
                 gunText.Visible = false
+            end
+
+            -- ESP HEALTH BAR
+            if Config.ESPHealth then
+                healthBar.Visible = true
+                local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                local barX = vector.X - (boxWidth / 2) - 5
+                
+                healthBar.From = Vector2.new(barX, bottomPos.Y)
+                healthBar.To = Vector2.new(barX, bottomPos.Y - (boxHeight * healthPercentage))
+                healthBar.Color = Color3.fromHSV((healthPercentage * 120) / 360, 1, 1)
+            else
                 healthBar.Visible = false
+            end
+
+            -- TRACES 
+            if Config.Traces then
+                traceLine.Visible = true
+                traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
+                traceLine.To = Vector2.new(vector.X, topPos.Y)
+            else
                 traceLine.Visible = false
             end
         else
+            -- Si no está en pantalla, ocultamos los dibujos
             nameText.Visible = false
             distText.Visible = false
             gunText.Visible = false
@@ -1561,7 +1529,7 @@ local function CreateESP(player)
             traceLine.Visible = false
         end
     end)
- end
+end
     
 
     
