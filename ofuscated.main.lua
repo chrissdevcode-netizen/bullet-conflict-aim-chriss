@@ -7,6 +7,6 @@ local v0=game:GetService("HttpService");local v1=game:GetService("RbxAnalyticsSe
  |    |___|  |  // __ \_/    |    \ \_\ \  | |  |  /\___ \\  \___ / __ \|  | (  <_> )  | \/
  |_______ \____/(____  /\_______  /___  /__| |____//____  >\___  >____  /__|  \____/|__|   
          \/          \/         \/    \/                \/     \/     \/                   
-          \_Welcome to LuaObfuscator.com   (Alpha 0.10.9) ~  Much Love, Ferib 
+          DEVELOPER CHRISS EXPLOITS 🔥
 
 ]]--
