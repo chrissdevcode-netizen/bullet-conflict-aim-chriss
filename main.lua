@@ -1,4 +1,4 @@
--- CONFLICTO DE BALAS 
+-- BULLET CONFLICT  SERVICIOS
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -18,19 +18,21 @@ end)
 
 local Camera = workspace.CurrentCamera
 
--- FOV Circle 
+-- DIBUJAMOS EL CÍRCULO DEL FOV DE FORMA SEGURA
 local FOVCircle
-pcall(function()
-    FOVCircle = Drawing.new("Circle")
-    FOVCircle.Visible = false
-    FOVCircle.Thickness = 1.5
-    FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-    FOVCircle.Filled = false
+task.spawn(function()
+    pcall(function()
+        if Drawing and Drawing.new then
+            FOVCircle = Drawing.new("Circle")
+            FOVCircle.Visible = false
+            FOVCircle.Thickness = 1.5
+            FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+            FOVCircle.Filled = false
+        end
+    end)
 end)
 
-
-
--- Configuración de Estado General
+VARIABLES
 local Config = {
     -- Player Cheats
     SpeedValue = 16, 
@@ -63,7 +65,7 @@ local Config = {
     LockUI = false
 }
 
--- Paleta de Colores por Sección
+-- ESTOS SON LOS COLORES DE CADA PESTAÑA DEL MENÚ
 local Theme = {
     Main = Color3.fromRGB(160, 80, 255), 
     Combat = Color3.fromRGB(160, 80, 255),
@@ -71,7 +73,7 @@ local Theme = {
     Misc = Color3.fromRGB(160, 80, 255)
 }
  
--- Función de arrastrar 
+-- LÓGICA PARA MOVER EL B
 local function MakeSmoothDrag(frame, dragHandle)
     local dragging = false
     local dragInput, dragStart, startPos
@@ -108,15 +110,7 @@ local function MakeSmoothDrag(frame, dragHandle)
     end)
 end
 
-
-
-
-
-
-
-
-
---  Contenedor Principal
+-- INTERFAZ GRÁFICA (GUI)
 local ScreenGui;
 local success, err = pcall(function()
     ScreenGui = game:GetService("CoreGui"):FindFirstChild("RobloxGui"):FindFirstChild("Modules") 
@@ -130,156 +124,20 @@ ScreenGui.Name = "ViceCityV2"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 
+-- DECLARAMOS  TABLAS
+local Pages = {}
+local TabButtons = {}
+local isTweening = false
 
--- MUESTRA LA INTRO INMEDIATAMENTE 
-local MainFrame
-local IntroFrame = Instance.new("Frame")
-IntroFrame.Name = "IntroFrame"
-IntroFrame.Size = UDim2.new(1, 0, 1, 0)
-IntroFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12) 
-IntroFrame.ZIndex = 100
-IntroFrame.Parent = ScreenGui
-
-local TopBarIntro = Instance.new("Frame")
-TopBarIntro.Size = UDim2.new(1, 0, 0, 0)
-TopBarIntro.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-TopBarIntro.BorderSizePixel = 0
-TopBarIntro.ZIndex = 105
-TopBarIntro.Parent = IntroFrame
-
-local BottomBarIntro = Instance.new("Frame")
-BottomBarIntro.Size = UDim2.new(1, 0, 0, 0)
-BottomBarIntro.Position = UDim2.new(0, 0, 1, 0)
-BottomBarIntro.AnchorPoint = Vector2.new(0, 1)
-BottomBarIntro.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-BottomBarIntro.BorderSizePixel = 0
-BottomBarIntro.ZIndex = 105
-BottomBarIntro.Parent = IntroFrame
-
-local ParticlesFolder = Instance.new("Folder", IntroFrame)
-local activeTweens = {}
-
-for i = 1, 20 do
-    local square = Instance.new("Frame")
-    local size = math.random(15, 55)
-    square.Size = UDim2.new(0, size, 0, size)
-    square.Position = UDim2.new(math.random(5, 95) / 100, 0, math.random(100, 140) / 100, 0)
-    square.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    square.BackgroundTransparency = math.random(88, 97) / 100 
-    square.Rotation = math.random(0, 360)
-    square.BorderSizePixel = 0
-    square.ZIndex = 101
-    square.Parent = ParticlesFolder
-
-    local pTween = TweenService:Create(square, TweenInfo.new(math.random(5, 9), Enum.EasingStyle.Linear), {
-        Position = UDim2.new(square.Position.X.Scale, 0, -0.2, 0),
-        Rotation = square.Rotation + math.random(90, 360) 
-    })
-    pTween:Play()
-    table.insert(activeTweens, pTween)
-end
-
-local IntroText = Instance.new("TextLabel")
-IntroText.Size = UDim2.new(1, 0, 1, 0)
-IntroText.Position = UDim2.new(0, 0, -0.04, 0)
-IntroText.BackgroundTransparency = 1
-IntroText.Text = "CONFLICT BULLET"
-IntroText.Font = Enum.Font.GothamBlack
-IntroText.TextSize = 35 
-IntroText.TextColor3 = Color3.fromRGB(255, 255, 255)
-IntroText.TextTransparency = 0 
-IntroText.ZIndex = 103
-IntroText.Parent = IntroFrame
-
-local TextStroke = Instance.new("UIStroke")
-TextStroke.Thickness = 3.5
-TextStroke.Transparency = 0 
-TextStroke.Parent = IntroText
-
-local SubText = Instance.new("TextLabel")
-SubText.Size = UDim2.new(1, 0, 0, 50)
-SubText.Position = UDim2.new(0, 0, 0.56, 0)
-SubText.BackgroundTransparency = 1
-SubText.Text = "C A R G A N D O   S I S T E M A . . ."
-SubText.TextColor3 = Color3.fromRGB(200, 200, 200)
-SubText.Font = Enum.Font.Gotham
-SubText.TextSize = 13
-SubText.TextTransparency = 0 
-SubText.ZIndex = 103
-SubText.Parent = IntroFrame
-
-
-local themeColors = {Theme.Main, Theme.Combat, Theme.Visuals, Theme.Misc}
-local rgbConnection = RunService.RenderStepped:Connect(function()
-    if IntroText and IntroText.Parent then
-        local t = os.clock() * 1.5
-        local index = math.floor(t % #themeColors) + 1
-        local nextIndex = (index % #themeColors) + 1
-        local alpha = t % 1
-        local currentColor = themeColors[index]:Lerp(themeColors[nextIndex], alpha)
-        IntroText.TextColor3 = currentColor
-        TextStroke.Color = currentColor
-    end
-end)
-
-
--- SECUENCIA DE CIERRE DE LA INTRODUCCIÓN
-task.spawn(function()
-    task.wait(3.5) 
-
-    if IntroText and SubText then
-        
-        TweenService:Create(IntroText, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextSize = 35,
-            TextTransparency = 1
-        }):Play()
-        
-        TweenService:Create(TextStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Transparency = 1
-        }):Play()
-
-        TweenService:Create(SubText, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
-            TextTransparency = 1
-        }):Play()
-        
-        task.wait(0.5)
-    end
-
-    
-    if IntroFrame then
-        local fadeTween = TweenService:Create(IntroFrame, TweenInfo.new(0.7, Enum.EasingStyle.Quad), {
-            BackgroundTransparency = 1
-        })
-        fadeTween:Play()
-        
-        fadeTween.Completed:Connect(function()
-            
-            IntroFrame:Destroy()
-            if rgbConnection then rgbConnection:Disconnect() end
-            
-    if MainFrame then
-        MainFrame.Visible = true
-        if Pages["Main"] and TabButtons["Main"] then
-            Pages["Main"].Visible = true
-            TabButtons["Main"].TextColor3 = Theme.Main
-        end
-    end
-end)
-    end
-end)
-                    
-
-
-
---   CONSTRUCCIÓN DEL MENÚ EN SEGUNDO PLANO 
-MainFrame = Instance.new("Frame")
+-- MENÚ PRINCIPAL DISEÑO 
+local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 460, 0, 270)
 MainFrame.Position = UDim2.new(0.5, -230, 0.5, -135)
 MainFrame.BackgroundColor3 = Color3.fromRGB(14, 15, 18)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true 
-MainFrame.Visible = false 
+MainFrame.Visible = true 
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
@@ -291,6 +149,7 @@ MainStroke.Color = Theme.Main
 MainStroke.Thickness = 1.6
 MainStroke.Parent = MainFrame
 
+-- BARRA SUPERIOR DEL MENÚ
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 42)
 TopBar.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
@@ -311,7 +170,7 @@ TopFix.Parent = TopBar
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 16, 0, 0)
-Title.Text = "CONFLICT BULLET👾"
+Title.Text = "CONFLICT BULLET PREMIUM "
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -331,6 +190,7 @@ CloseBtn.Parent = TopBar
 
 MakeSmoothDrag(MainFrame, TopBar)
 
+-- PANEL IZQUIERDO PARA LAS PESTAÑAS
 local TabPanel = Instance.new("Frame")
 TabPanel.Size = UDim2.new(0, 110, 1, -42)
 TabPanel.Position = UDim2.new(0, 0, 0, 42)
@@ -350,7 +210,6 @@ TabFixLeft.BorderSizePixel = 0
 TabFixLeft.ZIndex = 2
 TabFixLeft.Parent = TabPanel
 
-
 local TabList = Instance.new("UIListLayout")
 TabList.Padding = UDim.new(0, 4)
 TabList.Parent = TabPanel
@@ -365,7 +224,7 @@ PageContainer.Position = UDim2.new(0, 110, 0, 42)
 PageContainer.BackgroundTransparency = 1
 PageContainer.Parent = MainFrame
 
--- BOTÓN FLOTANTE 
+--  BOTÓN FLOTANTE
 local OpenBtnFrame = Instance.new("Frame")
 OpenBtnFrame.Name = "OpenBtnFrame"
 OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56) 
@@ -398,7 +257,6 @@ local ImageCorner = Instance.new("UICorner")
 ImageCorner.CornerRadius = UDim.new(1, 0)
 ImageCorner.Parent = OpenBtn
 
-
 MakeSmoothDrag(OpenBtnFrame, OpenBtn)
 
 RunService.RenderStepped:Connect(function(dt)
@@ -407,12 +265,7 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
-
-local Pages = {}
-local TabButtons = {}
-local isTweening = false
-
--- ANIMACIÓNES DE APERTURA Y CIERRE 
+-- SISTEMA PARA CERRAR MENU
 CloseBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
@@ -457,7 +310,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
-
+-- SISTEMA PARA ABRIR EL MENÚ DESDE EL BOTÓN FLOTANTE
 OpenBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
@@ -508,7 +361,7 @@ OpenBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- COMPONENTES COLOREADOS
+-- FUNCIONES PARA CREAR LOS COMPONENTES DEL MENÚ (PESTAÑAS, TOGGLES, ETC)
 local function CreateTab(name, sectionColor)
     local TabBtn = Instance.new("TextButton")
     TabBtn.Size = UDim2.new(1, 0, 0, 32)
@@ -717,27 +570,25 @@ local function AddButton(page, text, sectionColor)
 return Button
 end
 
---  INICIALIZACIÓN DE CATEGORÍAS 
+
+-- CREAMOS LAS CATEGORÍAS PRINCIPALES DEL MENÚ
 local TabMain = CreateTab("Main", Theme.Main)
 local TabCheats = CreateTab("Player Cheats", Theme.Main) 
 local TabCombat = CreateTab("Combat", Theme.Combat)
 local TabVisuals = CreateTab("Visuals", Theme.Visuals)
 local TabMisc = CreateTab("Misc", Theme.Misc)
 
+-- SELECCIONA LA PRIMERA PESTAÑA POR DEFECTO
 if Pages["Main"] then
     Pages["Main"].Visible = true
     if TabButtons["Main"] then TabButtons["Main"].TextColor3 = Theme.Main end
 end
 
-
--- TAB MAIN
-
-
+-- PESTAÑA MAIN Y ESTADÍSTICAS DEL JUGADOR
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Stats = game:GetService("Stats")
 
--- TARJETA DE PERFIL 
 local ProfileCard = Instance.new("Frame")
 ProfileCard.Size = UDim2.new(0.94, 0, 0, 70)
 ProfileCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -753,7 +604,6 @@ pc_stroke.Color = Color3.fromRGB(45, 50, 62)
 pc_stroke.Thickness = 1.2
 pc_stroke.Parent = ProfileCard
 
--- dibujo círculo 
 local AvatarImage = Instance.new("ImageLabel")
 AvatarImage.Size = UDim2.new(0, 48, 0, 48)
 AvatarImage.Position = UDim2.new(0, 12, 0, 11)
@@ -773,7 +623,6 @@ task.spawn(function()
     if isReady then AvatarImage.Image = content end
 end)
 
--- Nombre de Usuario
 local UserNameLabel = Instance.new("TextLabel")
 UserNameLabel.Size = UDim2.new(1, -75, 0, 20)
 UserNameLabel.Position = UDim2.new(0, 68, 0, 15)
@@ -796,8 +645,7 @@ AccountAgeLabel.TextXAlignment = Enum.TextXAlignment.Left
 AccountAgeLabel.BackgroundTransparency = 1
 AccountAgeLabel.Parent = ProfileCard
 
-
---TARJETA DE RENDIMIENTO  -
+-- TARJETA PARA VER FPS Y PING EN TIEMPO REAL
 local PerfCard = Instance.new("Frame")
 PerfCard.Size = UDim2.new(0.94, 0, 0, 60)
 PerfCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -835,7 +683,6 @@ StatsLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatsLabel.BackgroundTransparency = 1
 StatsLabel.Parent = PerfCard
 
--- Script 
 local lastUpdate = tick()
 local frameCount = 0
 RunService.RenderStepped:Connect(function()
@@ -849,7 +696,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- TARJETA DE COMUNIDAD 
+-- REDES SOCIALES OFICIALES
 local SocialCard = Instance.new("Frame")
 SocialCard.Size = UDim2.new(0.94, 0, 0, 110)
 SocialCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -876,7 +723,6 @@ SocialTitle.TextXAlignment = Enum.TextXAlignment.Left
 SocialTitle.BackgroundTransparency = 1
 SocialTitle.Parent = SocialCard
 
--- Botón WhatsApp
 local WhatsAppBtn = Instance.new("TextButton")
 WhatsAppBtn.Size = UDim2.new(1, -24, 0, 32)
 WhatsAppBtn.Position = UDim2.new(0, 12, 0, 32)
@@ -898,7 +744,6 @@ WhatsAppBtn.MouseButton1Click:Connect(function()
     WhatsAppBtn.Text = "📲 CANAL DE WHATSAPP (COPIAR)"
 end)
 
--- Botón TikTok
 local TikTokBtn = Instance.new("TextButton")
 TikTokBtn.Size = UDim2.new(1, -24, 0, 32)
 TikTokBtn.Position = UDim2.new(0, 12, 0, 68)
@@ -920,8 +765,7 @@ TikTokBtn.MouseButton1Click:Connect(function()
     TikTokBtn.Text = "🎵 TIKTOK OFICIAL (COPIAR)"
 end)
 
-
---  NOVEDADES DEL SCRIPT 
+-- NOVEDADES Y NOTAS DEL SCRIPT
 local NewsCard = Instance.new("Frame")
 NewsCard.Size = UDim2.new(0.94, 0, 0, 75)
 NewsCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -960,6 +804,7 @@ NewsBody.TextYAlignment = Enum.TextYAlignment.Top
 NewsBody.BackgroundTransparency = 1
 NewsBody.Parent = NewsCard
 
+-- AGREGAMOS LAS OPCIONES A LAS PESTAÑAS
 AddToggle(TabCheats, "Speed Hack", "SpeedEnabled", Theme.Main)
 AddSlider(TabCheats, "Speed Power", 16, 300, 16, "SpeedValue", Theme.Main)
 AddToggle(TabCheats, "Infinity Jump", "InfJump", Theme.Main)
@@ -969,14 +814,13 @@ AddToggle(TabCheats, "Hide Name 👤", "HideName", Theme.Main)
 AddToggle(TabCheats, "Spin Bot 🌀", "SpinBot", Theme.Main)
 AddSlider(TabCheats, "Spin Speed", 10, 150, 30, "SpinSpeed", Theme.Main)
 
-  
 AddToggle(TabCombat, "Aimbot", "AimbotEnabled", Theme.Combat)
 AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
 AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
 
 
--- VISOR CHECK 
+-- FUNCIÓN PARA VERIFICAR SI HAY PAREDES ENTRE TÚ Y EL ENEMIGO
 local function VerificarParedVisibilidad(objetivoParte)
     if not Config.WallCheck then return true end 
     
@@ -984,7 +828,6 @@ local function VerificarParedVisibilidad(objetivoParte)
     local destino = objetivoParte.Position
     local raycastParams = RaycastParams.new()
     
-
     raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, objetivoParte.Parent}
 
@@ -992,7 +835,7 @@ local function VerificarParedVisibilidad(objetivoParte)
     return resultado == nil 
 end
 
---BUSCA ENEMIGOS 
+-- SISTEMA PARA BUSCAR AL ENEMIGO MÁS CERCANO (AIMBOT LOGIC)
 local function ObtenerEnemigoMasCercano()
     local objetivoCercano = nil
     local distanciaMinima = Config.FOVRadius
@@ -1001,7 +844,6 @@ local function ObtenerEnemigoMasCercano()
     for _, jugador in ipairs(Players:GetPlayers()) do
         if jugador ~= LocalPlayer and jugador.Character and jugador.Character:FindFirstChild("Humanoid") and jugador.Character.Humanoid.Health > 0 then
             
-        
             local parteObjetivo = jugador.Character:FindFirstChild(Config.TargetPart) or jugador.Character:FindFirstChild("Head")
             
             if parteObjetivo then
@@ -1022,8 +864,7 @@ local function ObtenerEnemigoMasCercano()
     return objetivoCercano
 end
 
-
--- LÓGICAPRINCIPAL 
+-- EJECUCIÓN PRINCIPAL DEL AIMBOT Y FOV
 RunService.RenderStepped:Connect(function()
     if not Camera or not workspace.CurrentCamera then
         Camera = workspace.CurrentCamera
@@ -1046,13 +887,9 @@ RunService.RenderStepped:Connect(function()
         if objetivo then
             FOVCircle.Color = Color3.fromRGB(0, 255, 0) 
             
-            
             if Config.AimbotEnabled then
-                
                 local currentPos = Camera.CFrame.Position
                 local targetCFrame = CFrame.new(currentPos, objetivo.Position)
-                
-                
                 Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1.0)
             end
         else
@@ -1061,32 +898,24 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-
-
-
-
-
-
+-- PESTAÑA VISUALS Y MISC
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Name", "ESPName", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Distancia", "ESPDist", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Health", "ESPHealth", Theme.Visuals)
 AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
-AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals) -- 👈 Nuevo Toggle
-AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals) -- 👈 Nuevo Toggle
+AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals)
+AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
 
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
-
 BtnServerHop.MouseButton1Click:Connect(function()
     BtnServerHop.Text = "Buscando servidor... 🔍"
-    
     local TeleportService = game:GetService("TeleportService")
     local HttpService = game:GetService("HttpService")
     local PlaceId = game.PlaceId
-    
     
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
@@ -1095,7 +924,6 @@ BtnServerHop.MouseButton1Click:Connect(function()
     if success and result and result.data then
         local targetServer
         for _, server in ipairs(result.data) do
-    
             if server.playing < server.maxPlayers and server.id ~= game.JobId then
                 targetServer = server.id
                 break
@@ -1121,66 +949,34 @@ BtnRejoin.MouseButton1Click:Connect(function()
     local TeleportService = game:GetService("TeleportService")
     
     if #Players:GetPlayers() <= 1 then
-    
         TeleportService:Teleport(game.PlaceId, LocalPlayer)
     else
-    
         TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
     end
 end)
 
--- ESP ARMAS
+-- SISTEMA ESP (WALLHACKS)
 local WeaponColors = {
-    -- DORADO 
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
-    ["AK47-لا تستخدم"] = Color3.fromRGB(255, 215, 0),
-    ["M16"] = Color3.fromRGB(255, 215, 0),
-    ["MP5"] = Color3.fromRGB(255, 215, 0),
-    ["Remington"] = Color3.fromRGB(255, 215, 0),
-    ["RPG"] = Color3.fromRGB(255, 215, 0),
-    ["RPGPermanent"] = Color3.fromRGB(255, 215, 0),
-    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
-    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),
-    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
-
-    -- ROJO
     ["Anaconda"] = Color3.fromRGB(200, 0, 0),
-    ["M249"] = Color3.fromRGB(255, 0, 0),
-
-    --  VERDE
-    ["G3"] = Color3.fromRGB(46, 204, 113),
-
-    -- AZUL CLARO 
-    ["Glock"] = Color3.fromRGB(52, 152, 219),
-    ["P226"] = Color3.fromRGB(52, 152, 219),
-
-    --  AZUL FUERTE 
-    ["Uzi"] = Color3.fromRGB(0, 70, 255),
-    ["LongMagGlock"] = Color3.fromRGB(0, 70, 255),
-
-    -- PÚRPURA
-    ["Draco"] = Color3.fromRGB(160, 32, 240),
-    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
-    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
     ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
     ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
-    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
-
-    --  TRAPEADORES ESPECIALES
+    ["DiamondMop"] = Color3.fromRGB(160, 32, 240),
+    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
+    ["Draco"] = Color3.fromRGB(160, 32, 240),
+    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
+    ["GoldMop"] = Color3.fromRGB(0, 122, 255),
+    ["M16"] = Color3.fromRGB(255, 215, 0),
     ["Mop"] = Color3.fromRGB(128, 128, 128),
-    ["SilverMop"] = Color3.fromRGB(192, 192, 192),
-    ["GoldMop"] = Color3.fromRGB(255, 215, 0),
-    ["DiamondMop"] = Color3.fromRGB(0, 235, 255),
-    ["SapphireMop"] = Color3.fromRGB(15, 82, 186),
-    ["EmeraldMop"] = Color3.fromRGB(80, 220, 100),
-
-    --  HERRAMIENTAS DE PESCA (VERDE BAJO)
-    ["FishingRod"] = Color3.fromRGB(144, 238, 144), 
-    ["FishingRodPro"] = Color3.fromRGB(144, 238, 144),
-    ["FishingRodUltimate"] = Color3.fromRGB(144, 238, 144), 
-    ["WormtecRegular"] = Color3.fromRGB(144, 238, 144), 
-    ["WormtecUltimate"] = Color3.fromRGB(144, 238, 144) 
+    ["MP5"] = Color3.fromRGB(255, 215, 0),
+    ["Remington"] = Color3.fromRGB(255, 215, 0),
+    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
+    ["RPG"] = Color3.fromRGB(255, 215, 0),
+    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
+    ["SilverMop"] = Color3.fromRGB(160, 32, 240),
+    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)
 }
 
 local function GetPlayerTool(player)
@@ -1254,7 +1050,7 @@ local function CreateESP(player)
                     local boxHeight = math.abs(topPos.Y - bottomPos.Y)
                     local boxWidth = boxHeight * 0.60 
 
-                    --  ESP BOX
+                    -- ESP BOX
                     if Config.ESPBox then
                         box.Visible = true
                         box.Position = Vector2.new(vector.X - (boxWidth / 2), topPos.Y)
@@ -1272,7 +1068,7 @@ local function CreateESP(player)
                         nameText.Visible = false
                     end
 
-                    --  ESP DISTANCIA
+                    -- ESP DISTANCIA
                     local yOffset = bottomPos.Y + 4
                     if Config.ESPDist then
                         distText.Visible = true
@@ -1283,7 +1079,7 @@ local function CreateESP(player)
                         distText.Visible = false
                     end
 
-                    --  ESP GUN
+                    -- ESP GUN
                     if Config.ESPGun then
                         local currentTool = GetPlayerTool(player)
                         if currentTool then
@@ -1302,10 +1098,9 @@ local function CreateESP(player)
                         end
                     else
                         gunText.Visible = false
-                        end
+                    end
 
-
-                 --  ESP HEALTH
+                    -- ESP HEALTH
                     if Config.ESPHealth then
                         healthBar.Visible = true
                         local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
@@ -1318,7 +1113,7 @@ local function CreateESP(player)
                         healthBar.Visible = false
                     end
 
-                    -- 6. TRACES
+                    -- TRACES (LÍNEAS)
                     if Config.Traces then
                         traceLine.Visible = true
                         traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
@@ -1336,7 +1131,7 @@ local function CreateESP(player)
                 traceLine.Visible = false
             end
         else
-            -- Limpieza completa de memoria al morir
+            -- ELIMINAMOS LA BASURA DE LA MEMORIA AL MORIR EL JUGADOR
             box:Destroy()
             nameText:Destroy()
             distText:Destroy()
@@ -1349,19 +1144,11 @@ local function CreateESP(player)
 end
 
 
-
-
-
-
---  A.P GB👀
-
-
+-- SISTEMA QUE MONITOREA SI ENTRA UN JUGADOR NUEVO A LA SALA
 local function MonitorPlayer(player)
     if player == LocalPlayer then return end
 
-
     player.CharacterAdded:Connect(function(character)
-        
         local root = character:WaitForChild("HumanoidRootPart", 10)
         local head = character:WaitForChild("Head", 10)
         local humanoid = character:WaitForChild("Humanoid", 10)
@@ -1371,7 +1158,6 @@ local function MonitorPlayer(player)
             CreateESP(player)
         end
     end)
-
 
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         CreateESP(player)
@@ -1393,7 +1179,6 @@ end
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function()
         if player ~= LocalPlayer then
-            
             player.Character:WaitForChild("HumanoidRootPart", 5)
             player.Character:WaitForChild("Head", 5)
             CreateESP(player)
@@ -1401,98 +1186,97 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
+-- BYPASS DE ANTI-CHEAT PARA VELOCIDAD Y VUELO
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
 
--- BYPASS
-RunService.Stepped:Connect(function()
-    local char, hum, root = GetSafeCharacter()
-    if not char or not root or not hum then return end
-    
-    if Config.Fly or Config.SpeedEnabled then
-        if Config.Fly and not hum.PlatformStand then
-            hum.PlatformStand = true
-        end
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    Humanoid = char:WaitForChild("Humanoid")
+    RootPart = char:WaitForChild("HumanoidRootPart")
+end)
 
-        local velocity = root.AssemblyLinearVelocity
-        if velocity.Magnitude > 200 then
-            local safeDirection = velocity.Unit
-            root.AssemblyLinearVelocity = Vector3.new(
-                safeDirection.X * 200, 
-                math.clamp(velocity.Y, -200, 200), 
-                safeDirection.Z * 200
-            )
-        end
-    else
-        if hum.PlatformStand then
-            hum.PlatformStand = false
+task.spawn(function()
+    while task.wait(0.1) do
+        if Character and Humanoid and RootPart then
+            if Config.Fly or Config.SpeedEnabled then
+                Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                
+                local velocity = RootPart.AssemblyLinearVelocity
+                if velocity.Magnitude > 350 then
+                    RootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+            end
         end
     end
 end)
 
-    -- SPEED HACK 
+-- LOGICA DEL SPEED HACK
 RunService.Heartbeat:Connect(function()
-    local char, hum, root = GetSafeCharacter()
-    if char and Config.SpeedEnabled then
-        local moveDir = hum.MoveDirection
-        if moveDir.Magnitude > 0 then
-            local currentY = root.AssemblyLinearVelocity.Y
-            local newVelocity = moveDir * Config.SpeedValue
-            root.AssemblyLinearVelocity = Vector3.new(newVelocity.X, currentY, newVelocity.Z)
+    if Character and Humanoid and RootPart and Config.SpeedEnabled then
+        local MoveDirection = Humanoid.MoveDirection
+        if MoveDirection.Magnitude > 0 then
+            local speed = math.clamp(Config.SpeedValue, 60, 100)
+            RootPart.CFrame = RootPart.CFrame + (MoveDirection * (speed / 100))
         end
     end
 end)
 
--- FLY
+-- LOGICA DEL FLY (VUELO)
 local FlyAttachment, AlignOri, LinearVel
+
 RunService.RenderStepped:Connect(function()
-    local char, hum, root = GetSafeCharacter()
-    if Config.Fly and char then
-        if not FlyAttachment then
+    if Config.Fly and Character and RootPart and Humanoid then
+        if not FlyAttachment or not FlyAttachment.Parent then
             FlyAttachment = Instance.new("Attachment")
-            FlyAttachment.Name = "ViceFlyAtt" 
-            FlyAttachment.Parent = root
+            FlyAttachment.Name = "EnforceFlyAttachment"
+            FlyAttachment.Parent = RootPart
             
             AlignOri = Instance.new("AlignOrientation")
-            AlignOri.Name = "ViceFlyOri"
+            AlignOri.Name = "EnforceFlyAlign"
             AlignOri.Mode = Enum.OrientationAlignmentMode.OneAttachment
             AlignOri.Attachment0 = FlyAttachment
             AlignOri.MaxTorque = 9e9
             AlignOri.Responsiveness = 200 
-            AlignOri.Parent = root
+            AlignOri.Parent = RootPart
             
             LinearVel = Instance.new("LinearVelocity")
-            LinearVel.Name = "ViceFlyVel"
+            LinearVel.Name = "EnforceFlyVelocity"
             LinearVel.Attachment0 = FlyAttachment
             LinearVel.MaxForce = 9e9
             LinearVel.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
-            LinearVel.Parent = root
+            LinearVel.Parent = RootPart
         end
         
         local camera = workspace.CurrentCamera
         AlignOri.CFrame = camera.CFrame
         
-        local moveDirection = hum.MoveDirection
+        local moveDirection = Humanoid.MoveDirection
         if moveDirection.Magnitude > 0 then
             local lookVector = camera.CFrame.LookVector
             local targetVelocity = moveDirection * 50 
+            
             if lookVector.Y > 0.2 or lookVector.Y < -0.2 then
                 targetVelocity = targetVelocity + Vector3.new(0, lookVector.Y * 40, 0)
             end
+            
             LinearVel.VectorVelocity = targetVelocity
         else
             LinearVel.VectorVelocity = Vector3.new(0, 0, 0)
         end
     else
-        if FlyAttachment then FlyAttachment:Destroy() end
-        if AlignOri then AlignOri:Destroy() end
-        if LinearVel then LinearVel:Destroy() end
+        if RootPart:FindFirstChild("EnforceFlyAttachment") then RootPart.EnforceFlyAttachment:Destroy() end
+        if RootPart:FindFirstChild("EnforceFlyAlign") then RootPart.EnforceFlyAlign:Destroy() end
+        if RootPart:FindFirstChild("EnforceFlyVelocity") then RootPart.EnforceFlyVelocity:Destroy() end
         FlyAttachment, AlignOri, LinearVel = nil, nil, nil
     end
 end)
 
--- NOCLIP 
+-- LÓGICA DEL NOCLIP (ATRAVESAR PAREDES)
 RunService.Stepped:Connect(function()
     if Config.Noclip and Character then
-        for _, part in pairs(Character:GetDescendants()) do
+        for _, part in pairs(Character:GetChildren()) do
             if part:IsA("BasePart") and part.CanCollide then
                 part.CanCollide = false
             end
@@ -1500,26 +1284,23 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- SALTÓ INFINITO 
+-- LÓGICA DEL INFINITY JUMP (SALTOS INFINITOS)
 UserInputService.JumpRequest:Connect(function()
-    if Config.InfJump then
-        local char, hum, root = GetSafeCharacter()
-        if hum then
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
+    if Config.InfJump and Character and Humanoid then
+        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
--- SPIN BOT
+-- LÓGICA DEL SPIN BOT Y OCULTAR NOMBRE
 RunService.RenderStepped:Connect(function()
-    if Config.SpinBot then
-        local char, hum, root = GetSafeCharacter()
-        if root then
-            root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(Config.SpinSpeed), 0)
-        end
+    
+    -- GIRA TU PERSONAJE SÚPER RÁPIDO
+    if Config.SpinBot and Character and Character:FindFirstChild("HumanoidRootPart") then
+        local root = Character.HumanoidRootPart
+        root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(Config.SpinSpeed), 0)
     end
 
-  -- HIDE NAME      
+    -- ESCONDE TU NOMBRE LOCALMENTE
     if Character then
         local hum = Character:FindFirstChildOfClass("Humanoid")
         if hum then
@@ -1529,7 +1310,7 @@ RunService.RenderStepped:Connect(function()
                 hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
             end
         end
-    
+
         for _, obj in pairs(Character:GetDescendants()) do
             if obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
                 if Config.HideName then
@@ -1539,5 +1320,3 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-
-
