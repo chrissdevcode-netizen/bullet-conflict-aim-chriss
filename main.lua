@@ -18,19 +18,34 @@ end)
 
 local Camera = workspace.CurrentCamera
 
--- FOV CIRCLE
-local FOVCircle
-task.spawn(function()
-    pcall(function()
-        if Drawing and Drawing.new then
-            FOVCircle = Drawing.new("Circle")
-            FOVCircle.Visible = false
-            FOVCircle.Thickness = 1.5
-            FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-            FOVCircle.Filled = false
-        end
-    end)
-end)
+-- FOV CIRCLE (GUI)
+local fovGui = Instance.new("ScreenGui")
+local fovFrame = Instance.new("Frame")
+local fovCorner = Instance.new("UICorner")
+local fovStroke = Instance.new("UIStroke")
+
+fovGui.Name = "ChrissFov"
+fovGui.ResetOnSpawn = false
+
+pcall(function() fovGui.Parent = game:GetService("CoreGui") end)
+if not fovGui.Parent then
+    fovGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+fovFrame.Name = "FovCircle"
+fovFrame.Parent = fovGui
+fovFrame.BackgroundTransparency = 1
+fovFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+fovFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- SIEMPRE AL CENTRO PERFECTO
+fovFrame.Size = UDim2.fromOffset(Config.FOVRadius * 2, Config.FOVRadius * 2)
+fovFrame.Visible = false
+
+fovCorner.CornerRadius = UDim.new(1, 0)
+fovCorner.Parent = fovFrame
+
+fovStroke.Parent = fovFrame
+fovStroke.Thickness = 1.5
+fovStroke.Color = Color3.fromRGB(255, 255, 255)
 
 -- VARIABLES Y CONFIGURACIONES
 local Config = {
@@ -859,7 +874,7 @@ local function VerificarParedVisibilidad(objetivoParte)
     return resultado == nil 
 end
 
--- LOGICA AIMBOT OBJETIVO
+-- LOGICA AIMBOT 
 local function ObtenerEnemigoMasCercano()
     local objetivoCercano = nil
     local distanciaMinima = Config.FOVRadius
@@ -895,21 +910,19 @@ RunService.RenderStepped:Connect(function()
         return
     end
     
-    local centroPantalla = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    
+    --NEW FOV🔥
     if Config.FOVEnabled then
-        FOVCircle.Visible = true
-        FOVCircle.Radius = Config.FOVRadius
-        FOVCircle.Position = centroPantalla
+        fovFrame.Visible = true
+        fovFrame.Size = UDim2.fromOffset(Config.FOVRadius * 2, Config.FOVRadius * 2)
     else
-        FOVCircle.Visible = false
+        fovFrame.Visible = false
     end
     
     if Config.AimbotEnabled or Config.FOVEnabled then
         local objetivo = ObtenerEnemigoMasCercano()
         
         if objetivo then
-            FOVCircle.Color = Color3.fromRGB(0, 255, 0) 
+            fovStroke.Color = Color3.fromRGB(0, 255, 0) -- VERDE CUANDO DETECTA A ALGUIEN
             
             if Config.AimbotEnabled then
                 local currentPos = Camera.CFrame.Position
@@ -917,10 +930,11 @@ RunService.RenderStepped:Connect(function()
                 Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 1.0)
             end
         else
-            FOVCircle.Color = Color3.fromRGB(255, 0, 0) 
+            fovStroke.Color = Color3.fromRGB(255, 0, 0) -- ROJO CUANDO NO HAY NADIE CERCA
         end
     end
 end)
+
 
 -- VISUALS Y MISC TABS
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
@@ -1098,15 +1112,46 @@ local function CreateESP(player)
                 local boxHeight = math.abs(topPos.Y - bottomPos.Y)
                 local boxWidth = boxHeight * 0.55 
 
-                -- ESP BOX SEGURO
-                if Config.ESPBox then
-                    box.Visible = true
-                    box.Position = Vector2.new(vector.X - (boxWidth / 2), topPos.Y)
-                    box.Size = Vector2.new(boxWidth, boxHeight)
-                else
-                    box.Visible = false
-                end
+                -- LÓGICA ESP (HIGHLIGHT)
+local function CreateESP(player)
+    local highlight = Instance.new("Highlight")
+    highlight.FillTransparency = 1 
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    
+    --  CoreGui para evitar baneos 
+    local success = pcall(function() highlight.Parent = game:GetService("CoreGui") end)
+    if not success then highlight.Parent = game.Workspace end
 
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        -- Si el jugador se sale del server, se elimina
+        if not player or not player.Parent then
+            highlight:Destroy()
+            connection:Disconnect()
+            return
+        end
+
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+        if character and humanoid and humanoid.Health > 0 then
+            highlight.Adornee = character
+            
+            -- Se enciende y apaga con  toggle de ESP Box
+            if Config.ESPBox then
+                highlight.Enabled = true
+            else
+                highlight.Enabled = false
+            end
+        else
+            highlight.Enabled = false
+            highlight.Adornee = nil
+        end
+    end)
+end
+                    
                 -- ESP NAME
                 if Config.ESPName then
                     nameText.Visible = true
