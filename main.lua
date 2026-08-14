@@ -20,16 +20,12 @@ local Camera = workspace.CurrentCamera
 
 -- FOV Circle 
 local FOVCircle
-task.spawn(function()
-    pcall(function()
-        if Drawing and Drawing.new then
-            FOVCircle = Drawing.new("Circle")
-            FOVCircle.Visible = false
-            FOVCircle.Thickness = 1.5
-            FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-            FOVCircle.Filled = false
-        end
-    end)
+pcall(function()
+    FOVCircle = Drawing.new("Circle")
+    FOVCircle.Visible = false
+    FOVCircle.Thickness = 1.5
+    FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+    FOVCircle.Filled = false
 end)
 
 
@@ -1133,29 +1129,58 @@ BtnRejoin.MouseButton1Click:Connect(function()
     end
 end)
 
--- SISTEMA ESP
-
+-- ESP ARMAS
 local WeaponColors = {
+    -- DORADO 
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
-    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
-    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
-    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
-    ["DiamondMop"] = Color3.fromRGB(160, 32, 240),
-    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
-    ["Draco"] = Color3.fromRGB(160, 32, 240),
-    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
-    ["GoldMop"] = Color3.fromRGB(0, 122, 255),
+    ["AK47-لا تستخدم"] = Color3.fromRGB(255, 215, 0),
     ["M16"] = Color3.fromRGB(255, 215, 0),
-    ["Mop"] = Color3.fromRGB(128, 128, 128),
     ["MP5"] = Color3.fromRGB(255, 215, 0),
     ["Remington"] = Color3.fromRGB(255, 215, 0),
-    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
     ["RPG"] = Color3.fromRGB(255, 215, 0),
+    ["RPGPermanent"] = Color3.fromRGB(255, 215, 0),
     ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
-    ["SilverMop"] = Color3.fromRGB(160, 32, 240),
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),
+    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
+
+    -- ROJO
+    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
+    ["M249"] = Color3.fromRGB(255, 0, 0),
+
+    --  VERDE
+    ["G3"] = Color3.fromRGB(46, 204, 113),
+
+    -- AZUL CLARO 
+    ["Glock"] = Color3.fromRGB(52, 152, 219),
+    ["P226"] = Color3.fromRGB(52, 152, 219),
+
+    --  AZUL FUERTE 
+    ["Uzi"] = Color3.fromRGB(0, 70, 255),
+    ["LongMagGlock"] = Color3.fromRGB(0, 70, 255),
+
+    -- PÚRPURA
+    ["Draco"] = Color3.fromRGB(160, 32, 240),
+    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
+    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
+    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
+    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
     ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
-    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)
+
+    --  TRAPEADORES ESPECIALES
+    ["Mop"] = Color3.fromRGB(128, 128, 128),
+    ["SilverMop"] = Color3.fromRGB(192, 192, 192),
+    ["GoldMop"] = Color3.fromRGB(255, 215, 0),
+    ["DiamondMop"] = Color3.fromRGB(0, 235, 255),
+    ["SapphireMop"] = Color3.fromRGB(15, 82, 186),
+    ["EmeraldMop"] = Color3.fromRGB(80, 220, 100),
+
+    --  HERRAMIENTAS DE PESCA (VERDE BAJO)
+    ["FishingRod"] = Color3.fromRGB(144, 238, 144), 
+    ["FishingRodPro"] = Color3.fromRGB(144, 238, 144),
+    ["FishingRodUltimate"] = Color3.fromRGB(144, 238, 144), 
+    ["WormtecRegular"] = Color3.fromRGB(144, 238, 144), 
+    ["WormtecUltimate"] = Color3.fromRGB(144, 238, 144) 
 }
 
 local function GetPlayerTool(player)
@@ -1376,109 +1401,98 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
--- BYPASS ULTRA MEGA PRO MAX 🗣️🔥🔥🔥
 
+-- BYPASS
+RunService.Stepped:Connect(function()
+    local char, hum, root = GetSafeCharacter()
+    if not char or not root or not hum then return end
+    
+    if Config.Fly or Config.SpeedEnabled then
+        if Config.Fly and not hum.PlatformStand then
+            hum.PlatformStand = true
+        end
 
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local RootPart = Character:WaitForChild("HumanoidRootPart")
-
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-    Humanoid = char:WaitForChild("Humanoid")
-    RootPart = char:WaitForChild("HumanoidRootPart")
-end)
-
-task.spawn(function()
-    while task.wait(0.1) do
-        if Character and Humanoid and RootPart then
-            if Config.Fly or Config.SpeedEnabled then
-        
-                Humanoid:ChangeState(Enum.HumanoidStateType.Running)
-                
-                
-                local velocity = RootPart.AssemblyLinearVelocity
-                if velocity.Magnitude > 350 then
-                    RootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-            end
+        local velocity = root.AssemblyLinearVelocity
+        if velocity.Magnitude > 200 then
+            local safeDirection = velocity.Unit
+            root.AssemblyLinearVelocity = Vector3.new(
+                safeDirection.X * 200, 
+                math.clamp(velocity.Y, -200, 200), 
+                safeDirection.Z * 200
+            )
+        end
+    else
+        if hum.PlatformStand then
+            hum.PlatformStand = false
         end
     end
 end)
 
--- CONTROL DEL SPEED HACK 
+    -- SPEED HACK 
 RunService.Heartbeat:Connect(function()
-    if Character and Humanoid and RootPart and Config.SpeedEnabled then
-        local MoveDirection = Humanoid.MoveDirection
-        if MoveDirection.Magnitude > 0 then
-            
-            local speed = math.clamp(Config.SpeedValue, 60, 100)
-        
-            RootPart.CFrame = RootPart.CFrame + (MoveDirection * (speed / 100))
+    local char, hum, root = GetSafeCharacter()
+    if char and Config.SpeedEnabled then
+        local moveDir = hum.MoveDirection
+        if moveDir.Magnitude > 0 then
+            local currentY = root.AssemblyLinearVelocity.Y
+            local newVelocity = moveDir * Config.SpeedValue
+            root.AssemblyLinearVelocity = Vector3.new(newVelocity.X, currentY, newVelocity.Z)
         end
     end
 end)
 
-
---  CONTROL FLY
+-- FLY
 local FlyAttachment, AlignOri, LinearVel
-
 RunService.RenderStepped:Connect(function()
-    if Config.Fly and Character and RootPart and Humanoid then
-
-        if not FlyAttachment or not FlyAttachment.Parent then
+    local char, hum, root = GetSafeCharacter()
+    if Config.Fly and char then
+        if not FlyAttachment then
             FlyAttachment = Instance.new("Attachment")
-            FlyAttachment.Name = "EnforceFlyAttachment"
-            FlyAttachment.Parent = RootPart
+            FlyAttachment.Name = "ViceFlyAtt" 
+            FlyAttachment.Parent = root
             
             AlignOri = Instance.new("AlignOrientation")
-            AlignOri.Name = "EnforceFlyAlign"
+            AlignOri.Name = "ViceFlyOri"
             AlignOri.Mode = Enum.OrientationAlignmentMode.OneAttachment
             AlignOri.Attachment0 = FlyAttachment
             AlignOri.MaxTorque = 9e9
             AlignOri.Responsiveness = 200 
-            AlignOri.Parent = RootPart
+            AlignOri.Parent = root
             
             LinearVel = Instance.new("LinearVelocity")
-            LinearVel.Name = "EnforceFlyVelocity"
+            LinearVel.Name = "ViceFlyVel"
             LinearVel.Attachment0 = FlyAttachment
             LinearVel.MaxForce = 9e9
             LinearVel.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
-            LinearVel.Parent = RootPart
+            LinearVel.Parent = root
         end
         
         local camera = workspace.CurrentCamera
-        
         AlignOri.CFrame = camera.CFrame
         
-        local moveDirection = Humanoid.MoveDirection
+        local moveDirection = hum.MoveDirection
         if moveDirection.Magnitude > 0 then
-            
             local lookVector = camera.CFrame.LookVector
             local targetVelocity = moveDirection * 50 
-            
             if lookVector.Y > 0.2 or lookVector.Y < -0.2 then
                 targetVelocity = targetVelocity + Vector3.new(0, lookVector.Y * 40, 0)
             end
-            
             LinearVel.VectorVelocity = targetVelocity
         else
             LinearVel.VectorVelocity = Vector3.new(0, 0, 0)
         end
     else
-        if RootPart:FindFirstChild("EnforceFlyAttachment") then RootPart.EnforceFlyAttachment:Destroy() end
-        if RootPart:FindFirstChild("EnforceFlyAlign") then RootPart.EnforceFlyAlign:Destroy() end
-        if RootPart:FindFirstChild("EnforceFlyVelocity") then RootPart.EnforceFlyVelocity:Destroy() end
+        if FlyAttachment then FlyAttachment:Destroy() end
+        if AlignOri then AlignOri:Destroy() end
+        if LinearVel then LinearVel:Destroy() end
         FlyAttachment, AlignOri, LinearVel = nil, nil, nil
     end
 end)
 
-
---  NOCLIP 
+-- NOCLIP 
 RunService.Stepped:Connect(function()
     if Config.Noclip and Character then
-        for _, part in pairs(Character:GetChildren()) do
+        for _, part in pairs(Character:GetDescendants()) do
             if part:IsA("BasePart") and part.CanCollide then
                 part.CanCollide = false
             end
@@ -1486,32 +1500,27 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- INFINITY JUMP 
+-- SALTÓ INFINITO 
 UserInputService.JumpRequest:Connect(function()
-    if Config.InfJump and Character and Humanoid then
-        
-        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    if Config.InfJump then
+        local char, hum, root = GetSafeCharacter()
+        if hum then
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
     end
 end)
 
-
-
-
-
-
--- LÓGICA 
-
+-- SPIN BOT
 RunService.RenderStepped:Connect(function()
-    
-    -- SPIN BOT 
-    if Config.SpinBot and Character and Character:FindFirstChild("HumanoidRootPart") then
-        local root = Character.HumanoidRootPart
-        root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(Config.SpinSpeed), 0)
+    if Config.SpinBot then
+        local char, hum, root = GetSafeCharacter()
+        if root then
+            root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(Config.SpinSpeed), 0)
+        end
     end
 
-    -- HIDE NAME LOCAL 
+  -- HIDE NAME      
     if Character then
-
         local hum = Character:FindFirstChildOfClass("Humanoid")
         if hum then
             if Config.HideName then
@@ -1520,12 +1529,10 @@ RunService.RenderStepped:Connect(function()
                 hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
             end
         end
-
     
         for _, obj in pairs(Character:GetDescendants()) do
             if obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
                 if Config.HideName then
-                    
                     obj.Enabled = false
                 end
             end
@@ -1533,4 +1540,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-
+end
