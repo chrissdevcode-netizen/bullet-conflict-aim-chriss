@@ -1,40 +1,48 @@
 -- CHRISS HUB | KEY SYSTEM
 
+-- 1. ESPERAMOS DE FORMA SEGURA AL JUGADOR PARA NO CRASHEAR
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+
 local HttpService = game:GetService("HttpService")
 local RbxAnalytics = game:GetService("RbxAnalyticsService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 
-
 local DatabaseURL = "https://chrisshub-database-default-rtdb.firebaseio.com/"
 
--- Peticiones HTTP
-local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+-- 2. PETICIÓN HTTP OPTIMIZADA PARA DELTA
+local httprequest = request or http_request or (fluxus and fluxus.request)
 if not httprequest then
-    game.Players.LocalPlayer:Kick("Tu ejecutor no soporta peticiones HTTP avanzadas.")
+    LocalPlayer:Kick("Tu ejecutor no soporta peticiones HTTP avanzadas.")
     return
 end
 
--- Obtener HWID
+-- 3. OBTENER HWID SIN ERRORES DE LOCALPLAYER
 local function GetHWID()
     local success, result = pcall(function() return RbxAnalytics:GetClientId() end)
-    return success and result or tostring(game.Players.LocalPlayer.UserId .. "-FALLBACK")
+    return success and result or tostring(LocalPlayer.UserId .. "-FALLBACK")
 end
 local MyHWID = GetHWID()
 
--- 1. Efecto de Desenfoque Cinemático
+-- Efecto de Desenfoque Cinemático
 local BlurEffect = Instance.new("BlurEffect")
 BlurEffect.Size = 0
 BlurEffect.Parent = Lighting
 TweenService:Create(BlurEffect, TweenInfo.new(0.8, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {Size = 20}):Play()
 
-
 -- INTERFAZ NEON🔥
 local AuthGui = Instance.new("ScreenGui")
 AuthGui.Name = "ChrissAuthSystemPremium"
 AuthGui.ResetOnSpawn = false
-AuthGui.Parent = CoreGui
+
+-- 4. PCALL PARA EVITAR BLOQUEOS EN EL COREGUI
+local successParent = pcall(function() AuthGui.Parent = CoreGui end)
+if not successParent then AuthGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+
+
 
 local Overlay = Instance.new("Frame")
 Overlay.Size = UDim2.new(1, 0, 1, 0)
