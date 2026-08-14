@@ -1114,21 +1114,20 @@ local function CreateESP(player)
                 local boxHeight = math.abs(topPos.Y - bottomPos.Y)
                 local boxWidth = boxHeight * 0.55 
 
-                -- LÓGICA ESP (HIGHLIGHT)
+                
+-- LÓGICA ESP CONTORNO 
 local function CreateESP(player)
     local highlight = Instance.new("Highlight")
     highlight.FillTransparency = 1 
-    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0) 
     highlight.OutlineTransparency = 0
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     
-    --  CoreGui para evitar baneos 
     local success = pcall(function() highlight.Parent = game:GetService("CoreGui") end)
     if not success then highlight.Parent = game.Workspace end
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-        -- Si el jugador se sale del server, se elimina
         if not player or not player.Parent then
             highlight:Destroy()
             connection:Disconnect()
@@ -1141,7 +1140,7 @@ local function CreateESP(player)
         if character and humanoid and humanoid.Health > 0 then
             highlight.Adornee = character
             
-            -- Se enciende y apaga con  toggle de ESP Box
+            
             if Config.ESPBox then
                 highlight.Enabled = true
             else
