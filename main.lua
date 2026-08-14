@@ -36,8 +36,8 @@ fovFrame.Name = "FovCircle"
 fovFrame.Parent = fovGui
 fovFrame.BackgroundTransparency = 1
 fovFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-fovFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- SIEMPRE AL CENTRO PERFECTO
-fovFrame.Size = UDim2.fromOffset(Config.FOVRadius * 2, Config.FOVRadius * 2)
+fovFrame.Position = UDim2.new(0.5, 0, 0.5, 0) 
+fovFrame.Size = UDim2.fromOffset(200, 200)
 fovFrame.Visible = false
 
 fovCorner.CornerRadius = UDim.new(1, 0)
