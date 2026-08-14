@@ -1332,7 +1332,10 @@ BtnRejoin.MouseButton1Click:Connect(function()
     end
 end)
 
--- COLORES ARMAS ESP
+
+
+--  SISTEMA ESP 
+
 local WeaponColors = {
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
@@ -1348,11 +1351,7 @@ local WeaponColors = {
     ["Mop"] = Color3.fromRGB(128, 128, 128),
     ["MP5"] = Color3.fromRGB(255, 215, 0),
     ["Remington"] = Color3.fromRGB(255, 215, 0),
-    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
     ["RPG"] = Color3.fromRGB(255, 215, 0),
-    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
-    ["SilverMop"] = Color3.fromRGB(160, 32, 240),
-    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
     ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)
 }
 
@@ -1368,169 +1367,235 @@ local function GetPlayerTool(player)
     return nil
 end
 
+-- CONTENEDOR GUI SEGURO
+local ESPGui = Instance.new("ScreenGui")
+ESPGui.Name = "BulletConflictESP"
+ESPGui.IgnoreGuiInset = true
+ESPGui.ResetOnSpawn = false
+local success = pcall(function() ESPGui.Parent = game:GetService("CoreGui") end)
+if not success then ESPGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- LÓGICA ESP 
-local function CreateESP(player)
-    local highlight = Instance.new("Highlight")
-    highlight.FillTransparency = 1 
-    highlight.OutlineColor = Color3.fromRGB(255, 0, 0) 
-    highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    
-    local success = pcall(function() highlight.Parent = game:GetService("CoreGui") end)
-    if not success then highlight.Parent = game.Workspace end
+-- TABLA CACHÉ PARA EVITAR DUPLICADOS Y MEMORY LEAKs
+local espCache = {}
 
-    local nameText = Drawing.new("Text")
-    nameText.Visible = false
-    nameText.Center = true
-    nameText.Outline = true
-    nameText.Size = 13
-    nameText.Font = 2
-    nameText.Color = Color3.fromRGB(255, 255, 255)
+local function CreateUIElement(class, properties)
+    local element = Instance.new(class)
+    for k, v in pairs(properties) do element[k] = v end
+    return element
+end
 
-    local distText = Drawing.new("Text")
-    distText.Visible = false
-    distText.Center = true
-    distText.Outline = true
-    distText.Size = 11
-    distText.Font = 2
-    distText.Color = Color3.fromRGB(220, 220, 220)
+local function AddESP(player)
+    if player == LocalPlayer or espCache[player] then return end
 
-    local gunText = Drawing.new("Text")
-    gunText.Visible = false
-    gunText.Center = true
-    gunText.Outline = true
-    gunText.Size = 11
-    gunText.Font = 2
+    local cache = {}
+    espCache[player] = cache
 
-    local healthBar = Drawing.new("Line")
-    healthBar.Visible = false
-    healthBar.Thickness = 2
+    -- HIGHLIGHT 
+    cache.Highlight = CreateUIElement("Highlight", {
+        FillTransparency = 0.5, 
+        FillColor = Color3.fromRGB(255, 50, 50),
+        OutlineColor = Color3.fromRGB(255, 0, 0),
+        OutlineTransparency = 0,
+        DepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
+        Parent = ESPGui, 
+        Enabled = false
+    })
 
-    local traceLine = Drawing.new("Line")
-    traceLine.Visible = false
-    traceLine.Thickness = 1.0 
-    traceLine.Color = Color3.fromRGB(255, 0, 0)
+    -- ESP BOX 
+    cache.Box = CreateUIElement("Frame", {
+        BackgroundTransparency = 1,
+        Visible = false,
+        Parent = ESPGui
+    })
+    local boxStroke = Instance.new("UIStroke", cache.Box)
+    boxStroke.Color = Color3.fromRGB(255, 0, 0)
+    boxStroke.Thickness = 1.5
 
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
-    
-        if not player or not player.Parent then
-            highlight:Destroy()
-            nameText:Remove()
-            distText:Remove()
-            gunText:Remove()
-            healthBar:Remove()
-            traceLine:Remove()
-            connection:Disconnect()
-            return
+    -- TEXTOS
+    cache.NameText = CreateUIElement("TextLabel", {
+        BackgroundTransparency = 1, Visible = false, Font = Enum.Font.GothamBold,
+        TextSize = 12, TextColor3 = Color3.fromRGB(255, 255, 255),
+        Parent = ESPGui
+    })
+    Instance.new("UIStroke", cache.NameText).Thickness = 1.2
+
+    cache.DistText = CreateUIElement("TextLabel", {
+        BackgroundTransparency = 1, Visible = false, Font = Enum.Font.Gotham,
+        TextSize = 11, TextColor3 = Color3.fromRGB(220, 220, 220),
+        Parent = ESPGui
+    })
+    Instance.new("UIStroke", cache.DistText).Thickness = 1.2
+
+    cache.GunText = CreateUIElement("TextLabel", {
+        BackgroundTransparency = 1, Visible = false, Font = Enum.Font.Gotham,
+        TextSize = 11, TextColor3 = Color3.fromRGB(255, 255, 255),
+        Parent = ESPGui
+    })
+    Instance.new("UIStroke", cache.GunText).Thickness = 1.2
+
+    -- HEALTH BAR
+    cache.HealthBg = CreateUIElement("Frame", {
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0), BorderSizePixel = 0,
+        Visible = false, Parent = ESPGui
+    })
+    cache.HealthFill = CreateUIElement("Frame", {
+        BackgroundColor3 = Color3.fromRGB(0, 255, 0), BorderSizePixel = 0,
+        Visible = false, Parent = cache.HealthBg
+    })
+
+    -- TRACE (LÍNEA CON FRAME)
+    cache.Trace = CreateUIElement("Frame", {
+        BackgroundColor3 = Color3.fromRGB(255, 0, 0), BorderSizePixel = 0,
+        AnchorPoint = Vector2.new(0.5, 0.5), Visible = false, Parent = ESPGui
+    })
+end
+
+local function RemoveESP(player)
+    if espCache[player] then
+        for _, element in pairs(espCache[player]) do
+            if element then element:Destroy() end
         end
+        espCache[player] = nil
+    end
+end
 
+-- EVENTOS DE JUGADORES
+Players.PlayerAdded:Connect(AddESP)
+Players.PlayerRemoving:Connect(RemoveESP)
+for _, p in pairs(Players:GetPlayers()) do
+    AddESP(p)
+end
+
+-- MOTOR ÚNICO DE RENDERIZADO (NO MÁS BUCLES MÚLTIPLES)
+RunService.RenderStepped:Connect(function()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+
+    -- EL PUNTO DE ORIGEN PARA LAS LÍNEAS (ABAJO EN EL CENTRO)
+    local screenBottomCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+
+    for player, cache in pairs(espCache) do
         local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
         local rootPart = character and character:FindFirstChild("HumanoidRootPart")
         local head = character and character:FindFirstChild("Head")
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        local camera = workspace.CurrentCamera
 
-        -- 2. Si está muerto o respawneando, SOLO OCULTAMOS las cosas, NO LAS DESTRUIMOS
-        if not camera or not character or not rootPart or not head or not humanoid or humanoid.Health <= 0 then
-            highlight.Enabled = false
-            highlight.Adornee = nil
-            nameText.Visible = false
-            distText.Visible = false
-            gunText.Visible = false
-            healthBar.Visible = false
-            traceLine.Visible = false
-            return
+        -- SI ESTÁ MUERTO O FUERA, APAGAMOS TODO
+        if not character or not humanoid or humanoid.Health <= 0 or not rootPart or not head then
+            cache.Highlight.Enabled = false
+            cache.Highlight.Adornee = nil
+            cache.Box.Visible = false
+            cache.NameText.Visible = false
+            cache.DistText.Visible = false
+            cache.GunText.Visible = false
+            cache.HealthBg.Visible = false
+            cache.Trace.Visible = false
+            continue
         end
 
-        -- Si llegamos aquí, el jugador está vivo y coleando
-        highlight.Adornee = character
-        highlight.Enabled = Config.ESPBox
+        local rootPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
 
-        local vector, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-        
-        -- Si está en nuestra pantalla, dibujamos los textos y líneas
         if onScreen then
             local distance = (camera.CFrame.Position - rootPart.Position).Magnitude
             local topPos = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
             local bottomPos = camera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 2.5, 0))
 
             local boxHeight = math.abs(topPos.Y - bottomPos.Y)
-            local boxWidth = boxHeight * 0.55 
+            local boxWidth = boxHeight * 0.55
 
-            -- ESP NAME
+            --  HIGHLIGHT
+            cache.Highlight.Adornee = character
+            cache.Highlight.Enabled = Config.ESPBox
+
+            --  ESP BOX R
+            if Config.ESPBox then
+                cache.Box.Size = UDim2.new(0, boxWidth, 0, boxHeight)
+                cache.Box.Position = UDim2.new(0, rootPos.X - (boxWidth / 2), 0, topPos.Y)
+                cache.Box.Visible = true
+            else
+                cache.Box.Visible = false
+            end
+
+            -- ESP NOMBRES
             if Config.ESPName then
-                nameText.Visible = true
-                nameText.Position = Vector2.new(vector.X, topPos.Y - 16)
-                nameText.Text = player.Name
+                cache.NameText.Text = player.Name
+                cache.NameText.Size = UDim2.new(0, boxWidth, 0, 15)
+                cache.NameText.Position = UDim2.new(0, rootPos.X - (boxWidth / 2), 0, topPos.Y - 18)
+                cache.NameText.Visible = true
             else
-                nameText.Visible = false
+                cache.NameText.Visible = false
             end
 
-            -- ESP DISTANCIA
-            local yOffset = bottomPos.Y + 2
+            --  ESP DISTANCIA
+            local yOffset = bottomPos.Y + 4
             if Config.ESPDist then
-                distText.Visible = true
-                distText.Position = Vector2.new(vector.X, yOffset)
-                distText.Text = string.format("[%d studs]", math.floor(distance))
-                yOffset = yOffset + 12
+                cache.DistText.Text = string.format("[%d studs]", math.floor(distance))
+                cache.DistText.Size = UDim2.new(0, boxWidth, 0, 15)
+                cache.DistText.Position = UDim2.new(0, rootPos.X - (boxWidth / 2), 0, yOffset)
+                cache.DistText.Visible = true
+                yOffset = yOffset + 14
             else
-                distText.Visible = false
+                cache.DistText.Visible = false
             end
 
-            -- ESP GUN
+            -- ESP ARMAS
             if Config.ESPGun then
-                local currentTool = GetPlayerTool(player)
-                if currentTool then
-                    local weaponName = currentTool.Name
-                    gunText.Visible = true
-                    gunText.Color = WeaponColors[weaponName] or Color3.fromRGB(255, 255, 255)
-                    
-                    if Config.ESPGunDist then
-                        gunText.Text = string.format("%s [%d studs]", weaponName, math.floor(distance))
-                    else
-                        gunText.Text = weaponName
-                    end
-                    gunText.Position = Vector2.new(vector.X, yOffset)
+                local tool = GetPlayerTool(player)
+                if tool then
+                    local wName = tool.Name
+                    cache.GunText.Text = Config.ESPGunDist and string.format("%s [%d studs]", wName, math.floor(distance)) or wName
+                    cache.GunText.TextColor3 = WeaponColors[wName] or Color3.fromRGB(255, 255, 255)
+                    cache.GunText.Size = UDim2.new(0, boxWidth, 0, 15)
+                    cache.GunText.Position = UDim2.new(0, rootPos.X - (boxWidth / 2), 0, yOffset)
+                    cache.GunText.Visible = true
                 else
-                    gunText.Visible = false
+                    cache.GunText.Visible = false
                 end
             else
-                gunText.Visible = false
+                cache.GunText.Visible = false
             end
 
             -- ESP HEALTH BAR
             if Config.ESPHealth then
-                healthBar.Visible = true
-                local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                local barX = vector.X - (boxWidth / 2) - 5
+                local hpPercent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                local barHeight = boxHeight
+                cache.HealthBg.Size = UDim2.new(0, 3, 0, barHeight)
+                cache.HealthBg.Position = UDim2.new(0, rootPos.X - (boxWidth / 2) - 6, 0, topPos.Y)
                 
-                healthBar.From = Vector2.new(barX, bottomPos.Y)
-                healthBar.To = Vector2.new(barX, bottomPos.Y - (boxHeight * healthPercentage))
-                healthBar.Color = Color3.fromHSV((healthPercentage * 120) / 360, 1, 1)
+                cache.HealthFill.Size = UDim2.new(1, 0, hpPercent, 0)
+                cache.HealthFill.Position = UDim2.new(0, 0, 1 - hpPercent, 0)
+                cache.HealthFill.BackgroundColor3 = Color3.fromHSV((hpPercent * 120) / 360, 1, 1)
+                
+                cache.HealthBg.Visible = true
+                cache.HealthFill.Visible = true
             else
-                healthBar.Visible = false
+                cache.HealthBg.Visible = false
             end
 
-            -- TRACES 
+            -- TRACES (
             if Config.Traces then
-                traceLine.Visible = true
-                traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
-                traceLine.To = Vector2.new(vector.X, topPos.Y)
+                local targetPos = Vector2.new(rootPos.X, bottomPos.Y)
+                local dist = (targetPos - screenBottomCenter).Magnitude
+                
+                cache.Trace.Size = UDim2.new(0, dist, 0, 1)
+                cache.Trace.Position = UDim2.new(0, (screenBottomCenter.X + targetPos.X) / 2, 0, (screenBottomCenter.Y + targetPos.Y) / 2)
+                cache.Trace.Rotation = math.deg(math.atan2(targetPos.Y - screenBottomCenter.Y, targetPos.X - screenBottomCenter.X))
+                cache.Trace.Visible = true
             else
-                traceLine.Visible = false
+                cache.Trace.Visible = false
             end
         else
-            -- Si no está en pantalla, ocultamos los dibujos
-            nameText.Visible = false
-            distText.Visible = false
-            gunText.Visible = false
-            healthBar.Visible = false
-            traceLine.Visible = false
+            cache.Highlight.Enabled = false
+            cache.Box.Visible = false
+            cache.NameText.Visible = false
+            cache.DistText.Visible = false
+            cache.GunText.Visible = false
+            cache.HealthBg.Visible = false
+            cache.Trace.Visible = false
         end
-    end)
- end
+    end
+end)
+    
     
 
         
@@ -1539,9 +1604,6 @@ local function CreateESP(player)
     
                             
                 
-    
-
-
 
                 
 -- LOGICA BYPASS
