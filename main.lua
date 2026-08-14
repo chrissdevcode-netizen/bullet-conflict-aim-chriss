@@ -67,7 +67,8 @@ local Config = {
     WallCheck = true,
     TargetPart = "HumanoidRootPart",
     
-    -- Visuals 
+    -- Visuals
+    Fullbright = false,
     ESPBox = false, 
     ESPName = false, 
     ESPDist = false, 
@@ -937,6 +938,7 @@ end)
 
 
 -- VISUALS Y MISC TABS
+AddToggle(TabVisuals, "Fullbright ", "Fullbright", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Name", "ESPName", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Distancia", "ESPDist", Theme.Visuals)
@@ -1206,7 +1208,27 @@ end
                     healthBar.Visible = false
                 end
 
-                -- TRACES 
+           -- LOGICA  HIL
+local Lighting = game:GetService("Lighting")
+local DefaultAmbient = Lighting.Ambient
+local DefaultOutdoor = Lighting.OutdoorAmbient
+
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        if Config.Fullbright then
+            
+            Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+            Lighting.ClockTime = 14
+        else
+            
+            Lighting.Ambient = DefaultAmbient
+            Lighting.OutdoorAmbient = DefaultOutdoor
+        end
+    end)
+end)
+                    
+             -- TRACES 
                 if Config.Traces then
                     traceLine.Visible = true
                     traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
