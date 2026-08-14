@@ -1368,6 +1368,7 @@ local function GetPlayerTool(player)
     return nil
 end
 
+
 -- LÓGICA ESP 
 local function CreateESP(player)
     local highlight = Instance.new("Highlight")
@@ -1413,7 +1414,7 @@ local function CreateESP(player)
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-        -- 1. SOLO destruimos todo si el jugador SE VA DEL JUEGO
+    
         if not player or not player.Parent then
             highlight:Destroy()
             nameText:Remove()
@@ -1529,7 +1530,10 @@ local function CreateESP(player)
             traceLine.Visible = false
         end
     end)
-end
+ end
+    
+
+        
     
 
     
