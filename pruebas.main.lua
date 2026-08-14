@@ -1368,14 +1368,43 @@ local function GetPlayerTool(player)
     return nil
 end
 
--- LOGICA ESP BLINDADA PARA MÓVIL
-local function CreateESP(player)
-    local box = Drawing.new("Square")
-    box.Visible = false
-    box.Thickness = 1.0     
-    box.Color = Color3.fromRGB(255, 0, 0)
-    box.Filled = false
+-- ==========================================
+-- ☀️ LÓGICA DEL HILBRANOSE (FULLBRIGHT) ☀️
+-- Va totalmente separado del ESP para no dar lag
+-- ==========================================
+local Lighting = game:GetService("Lighting")
+local DefaultAmbient = Lighting.Ambient
+local DefaultOutdoor = Lighting.OutdoorAmbient
 
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        if Config.Fullbright then
+            Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+            Lighting.ClockTime = 14
+        else
+            Lighting.Ambient = DefaultAmbient
+            Lighting.OutdoorAmbient = DefaultOutdoor
+        end
+    end)
+end)
+
+
+
+--  LÓGICA ESP 
+local function CreateESP(player)
+  
+        --  ESP BOX 
+    local highlight = Instance.new("Highlight")
+    highlight.FillTransparency = 1 
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0) 
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    
+    local success = pcall(function() highlight.Parent = game:GetService("CoreGui") end)
+    if not success then highlight.Parent = game.Workspace end
+
+    --  TEXTOS Y LÍNEAS 
     local nameText = Drawing.new("Text")
     nameText.Visible = false
     nameText.Center = true
@@ -1410,9 +1439,9 @@ local function CreateESP(player)
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-        -- Verificación estricta de que el jugador y sus partes sigan vivos
+        -- Verificación estricta
         if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") or not player.Character:FindFirstChild("Head") then
-            box:Remove()
+            highlight:Destroy()
             nameText:Remove()
             distText:Remove()
             gunText:Remove()
@@ -1428,8 +1457,10 @@ local function CreateESP(player)
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         local camera = workspace.CurrentCamera
 
+        
         if not camera or not humanoid or humanoid.Health <= 0 then
-            box.Visible = false
+            highlight.Enabled = false
+            highlight.Adornee = nil
             nameText.Visible = false
             distText.Visible = false
             gunText.Visible = false
@@ -1437,6 +1468,10 @@ local function CreateESP(player)
             traceLine.Visible = false
             return
         end
+
+        
+        highlight.Adornee = character
+        highlight.Enabled = Config.ESPBox
 
         local vector, onScreen = camera:WorldToViewportPoint(rootPart.Position)
         
@@ -1449,45 +1484,6 @@ local function CreateESP(player)
                 local boxHeight = math.abs(topPos.Y - bottomPos.Y)
                 local boxWidth = boxHeight * 0.55 
 
-                
--- LÓGICA ESP CONTORNO 
-local function CreateESP(player)
-    local highlight = Instance.new("Highlight")
-    highlight.FillTransparency = 1 
-    highlight.OutlineColor = Color3.fromRGB(255, 0, 0) 
-    highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    
-    local success = pcall(function() highlight.Parent = game:GetService("CoreGui") end)
-    if not success then highlight.Parent = game.Workspace end
-
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
-        if not player or not player.Parent then
-            highlight:Destroy()
-            connection:Disconnect()
-            return
-        end
-
-        local character = player.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-        if character and humanoid and humanoid.Health > 0 then
-            highlight.Adornee = character
-            
-            
-            if Config.ESPBox then
-                highlight.Enabled = true
-            else
-                highlight.Enabled = false
-            end
-        else
-            highlight.Enabled = false
-            highlight.Adornee = nil
-        end
-    end)
-end
-                    
                 -- ESP NAME
                 if Config.ESPName then
                     nameText.Visible = true
@@ -1542,27 +1538,7 @@ end
                     healthBar.Visible = false
                 end
 
-           -- LOGICA  HIL
-local Lighting = game:GetService("Lighting")
-local DefaultAmbient = Lighting.Ambient
-local DefaultOutdoor = Lighting.OutdoorAmbient
-
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        if Config.Fullbright then
-            
-            Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-            Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-            Lighting.ClockTime = 14
-        else
-            
-            Lighting.Ambient = DefaultAmbient
-            Lighting.OutdoorAmbient = DefaultOutdoor
-        end
-    end)
-end)
-                    
-             -- TRACES 
+                -- TRACES 
                 if Config.Traces then
                     traceLine.Visible = true
                     traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
@@ -1571,7 +1547,6 @@ end)
                     traceLine.Visible = false
                 end
             else
-                box.Visible = false
                 nameText.Visible = false
                 distText.Visible = false
                 gunText.Visible = false
@@ -1579,7 +1554,6 @@ end)
                 traceLine.Visible = false
             end
         else
-            box.Visible = false
             nameText.Visible = false
             distText.Visible = false
             gunText.Visible = false
@@ -1587,36 +1561,13 @@ end)
             traceLine.Visible = false
         end
     end)
-end
+ end
+    
 
-
-            
-                    
--- LOGICA MONITOR JUGADORES
-local function MonitorPlayer(player)
-    if player == LocalPlayer then return end
-
-    player.CharacterAdded:Connect(function(character)
-        local root = character:WaitForChild("HumanoidRootPart", 10)
-        local head = character:WaitForChild("Head", 10)
-        local humanoid = character:WaitForChild("Humanoid", 10)
-        
-        if root and head and humanoid then
-            task.wait(0.2) 
-            CreateESP(player)
-        end
-    end)
-
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        CreateESP(player)
-    end
-end
-
-Players.PlayerAdded:Connect(MonitorPlayer)
-
-for _, player in pairs(Players:GetPlayers()) do
-    MonitorPlayer(player)
-end
+    
+                            
+                
+    
 
 
 
