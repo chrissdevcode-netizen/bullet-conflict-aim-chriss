@@ -1334,26 +1334,59 @@ end)
 
 
 
---  SISTEMA ESP 
-
+--  SISTEMA ESP
 local WeaponColors = {
+    -- DORADO 
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
-    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
-    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
-    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
-    ["DiamondMop"] = Color3.fromRGB(160, 32, 240),
-    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
-    ["Draco"] = Color3.fromRGB(160, 32, 240),
-    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
-    ["GoldMop"] = Color3.fromRGB(0, 122, 255),
+    ["AK47-لا تستخدم"] = Color3.fromRGB(255, 215, 0),
     ["M16"] = Color3.fromRGB(255, 215, 0),
-    ["Mop"] = Color3.fromRGB(128, 128, 128),
     ["MP5"] = Color3.fromRGB(255, 215, 0),
     ["Remington"] = Color3.fromRGB(255, 215, 0),
     ["RPG"] = Color3.fromRGB(255, 215, 0),
-    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)
-}
+    ["RPGPermanent"] = Color3.fromRGB(255, 215, 0),
+    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),
+    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
+
+    -- ROJO
+    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
+    ["M249"] = Color3.fromRGB(255, 0, 0),
+
+    --  VERDE
+    ["G3"] = Color3.fromRGB(46, 204, 113),
+
+    -- AZUL CLARO 
+    ["Glock"] = Color3.fromRGB(52, 152, 219),
+    ["P226"] = Color3.fromRGB(52, 152, 219),
+
+    --  AZUL FUERTE 
+    ["Uzi"] = Color3.fromRGB(0, 70, 255),
+    ["LongMagGlock"] = Color3.fromRGB(0, 70, 255),
+
+    -- PÚRPURA
+    ["Draco"] = Color3.fromRGB(160, 32, 240),
+    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
+    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
+    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
+    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
+    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
+
+    --  TRAPEADORES ESPECIALES
+    ["Mop"] = Color3.fromRGB(128, 128, 128),
+    ["SilverMop"] = Color3.fromRGB(192, 192, 192),
+    ["GoldMop"] = Color3.fromRGB(255, 215, 0),
+    ["DiamondMop"] = Color3.fromRGB(0, 235, 255),
+    ["SapphireMop"] = Color3.fromRGB(15, 82, 186),
+    ["EmeraldMop"] = Color3.fromRGB(80, 220, 100),
+
+    --  HERRAMIENTAS DE PESCA (VERDE BAJO)
+    ["FishingRod"] = Color3.fromRGB(144, 238, 144), 
+    ["FishingRodPro"] = Color3.fromRGB(144, 238, 144),
+    ["FishingRodUltimate"] = Color3.fromRGB(144, 238, 144), 
+    ["WormtecRegular"] = Color3.fromRGB(144, 238, 144), 
+    ["WormtecUltimate"] = Color3.fromRGB(144, 238, 144) 
+    }
 
 local function GetPlayerTool(player)
     if player.Character then
