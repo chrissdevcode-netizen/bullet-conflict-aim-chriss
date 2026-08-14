@@ -1,4 +1,4 @@
--- BULLET CONFLICT  SERVICIOS
+-- BULLET CONFLICT PREMIUM
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -18,7 +18,7 @@ end)
 
 local Camera = workspace.CurrentCamera
 
--- DIBUJAMOS EL CÍRCULO DEL FOV DE FORMA SEGURA
+-- FOV CIRCLE
 local FOVCircle
 task.spawn(function()
     pcall(function()
@@ -32,9 +32,9 @@ task.spawn(function()
     end)
 end)
 
-VARIABLES
+-- VARIABLES Y CONFIGURACIONES
 local Config = {
-    -- Player Cheats
+    -- Cheats
     SpeedValue = 16, 
     SpeedEnabled = false, 
     InfJump = false, 
@@ -65,7 +65,7 @@ local Config = {
     LockUI = false
 }
 
--- ESTOS SON LOS COLORES DE CADA PESTAÑA DEL MENÚ
+-- TEMAS
 local Theme = {
     Main = Color3.fromRGB(160, 80, 255), 
     Combat = Color3.fromRGB(160, 80, 255),
@@ -73,7 +73,7 @@ local Theme = {
     Misc = Color3.fromRGB(160, 80, 255)
 }
  
--- LÓGICA PARA MOVER EL B
+-- UI DRAG
 local function MakeSmoothDrag(frame, dragHandle)
     local dragging = false
     local dragInput, dragStart, startPos
@@ -110,7 +110,7 @@ local function MakeSmoothDrag(frame, dragHandle)
     end)
 end
 
--- INTERFAZ GRÁFICA (GUI)
+-- MAIN GUI
 local ScreenGui;
 local success, err = pcall(function()
     ScreenGui = game:GetService("CoreGui"):FindFirstChild("RobloxGui"):FindFirstChild("Modules") 
@@ -124,20 +124,22 @@ ScreenGui.Name = "ViceCityV2"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 
--- DECLARAMOS  TABLAS
+-- VARIABLES DE ESTADO MENU
 local Pages = {}
 local TabButtons = {}
 local isTweening = false
+local ActivePage = "Main" -- Guarda la última pestaña abierta
 
--- MENÚ PRINCIPAL DISEÑO 
+-- MENU PRINCIPAL DISEÑO 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 460, 0, 270)
+MainFrame.Size = UDim2.new(0, 10, 0, 10) -- Arranca encogido
 MainFrame.Position = UDim2.new(0.5, -230, 0.5, -135)
 MainFrame.BackgroundColor3 = Color3.fromRGB(14, 15, 18)
+MainFrame.BackgroundTransparency = 1 -- Arranca invisible
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true 
-MainFrame.Visible = true 
+MainFrame.Visible = false -- ARRANCA CERRADO
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
@@ -147,9 +149,10 @@ MainCorner.Parent = MainFrame
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Color = Theme.Main
 MainStroke.Thickness = 1.6
+MainStroke.Transparency = 1 -- Arranca invisible
 MainStroke.Parent = MainFrame
 
--- BARRA SUPERIOR DEL MENÚ
+-- TOP BAR
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 42)
 TopBar.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
@@ -167,17 +170,34 @@ TopFix.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
 TopFix.BorderSizePixel = 0
 TopFix.Parent = TopBar
 
+-- TITULO ANIMADO (PREMIUM)
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 16, 0, 0)
-Title.Text = "CONFLICT BULLET PREMIUM "
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 13.5
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
+Title.RichText = true
 Title.Parent = TopBar
 
+-- LOGICA TITULO MULTICOLOR
+RunService.RenderStepped:Connect(function()
+    local t = tick() * 3
+    
+    -- Efecto Dorado Brillante para PREMIUM
+    local goldG = math.floor(215 + math.sin(t) * 40)
+    local goldHex = string.format("#FF%02X00", goldG)
+    
+    -- Efecto Morado suave para BULLET CONFLICT
+    local bcR = math.floor(160 + math.sin(t * 0.5) * 20)
+    local bcG = math.floor(80 + math.sin(t * 0.5) * 20)
+    local bcHex = string.format("#%02X%02XFF", bcR, bcG)
+
+    Title.Text = string.format('<b><font color="%s">BULLET CONFLICT</font> <font color="%s">PREMIUM</font></b>', bcHex, goldHex)
+end)
+
+-- CLOSE BOTON
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 32, 0, 32)
 CloseBtn.Position = UDim2.new(1, -38, 0, 5)
@@ -190,7 +210,7 @@ CloseBtn.Parent = TopBar
 
 MakeSmoothDrag(MainFrame, TopBar)
 
--- PANEL IZQUIERDO PARA LAS PESTAÑAS
+-- TAB PANEL
 local TabPanel = Instance.new("Frame")
 TabPanel.Size = UDim2.new(0, 110, 1, -42)
 TabPanel.Position = UDim2.new(0, 0, 0, 42)
@@ -224,13 +244,13 @@ PageContainer.Position = UDim2.new(0, 110, 0, 42)
 PageContainer.BackgroundTransparency = 1
 PageContainer.Parent = MainFrame
 
---  BOTÓN FLOTANTE
+-- BOTON FLOTANTE
 local OpenBtnFrame = Instance.new("Frame")
 OpenBtnFrame.Name = "OpenBtnFrame"
 OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56) 
 OpenBtnFrame.Position = UDim2.new(0.03, 0, 0.5, -28) 
 OpenBtnFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
-OpenBtnFrame.Visible = false 
+OpenBtnFrame.Visible = true -- ARRANCA VISIBLE
 OpenBtnFrame.ClipsDescendants = true
 OpenBtnFrame.Parent = ScreenGui
 
@@ -265,7 +285,7 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
--- SISTEMA PARA CERRAR MENU
+-- LOGICA CERRAR MENU
 CloseBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
@@ -287,7 +307,7 @@ CloseBtn.MouseButton1Click:Connect(function()
         TweenService:Create(CloseBtn, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
         TweenService:Create(TabPanel, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
         
-        for _, p in pairs(Pages) do p.Visible = false end
+        -- Ocultamos el contenido sin borrar la página activa
         for _, btn in pairs(TabButtons) do
             TweenService:Create(btn, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
         end
@@ -298,6 +318,8 @@ CloseBtn.MouseButton1Click:Connect(function()
     
     mainClose.Completed:Connect(function()
         MainFrame.Visible = false
+        for _, p in pairs(Pages) do p.Visible = false end -- Apagamos para resetear estado visual
+        
         OpenBtnFrame.Visible = true
         OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56)
         OpenBtn.Size = UDim2.new(0, 0, 0, 0)
@@ -310,7 +332,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- SISTEMA PARA ABRIR EL MENÚ DESDE EL BOTÓN FLOTANTE
+-- LOGICA ABRIR MENU
 OpenBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
@@ -335,8 +357,9 @@ OpenBtn.MouseButton1Click:Connect(function()
             end
         end)
         
-        if Pages["Main"] then
-            Pages["Main"].Visible = true
+        -- AQUÍ RESTAURA LA PESTAÑA EN LA QUE TE QUEDASTE
+        if Pages[ActivePage] then
+            Pages[ActivePage].Visible = true
         end
         
         MainFrame.Size = UDim2.new(0, 10, 0, 10) 
@@ -361,7 +384,7 @@ OpenBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- FUNCIONES PARA CREAR LOS COMPONENTES DEL MENÚ (PESTAÑAS, TOGGLES, ETC)
+-- UI TABS
 local function CreateTab(name, sectionColor)
     local TabBtn = Instance.new("TextButton")
     TabBtn.Size = UDim2.new(1, 0, 0, 32)
@@ -397,6 +420,7 @@ local function CreateTab(name, sectionColor)
     end)
 
     TabBtn.MouseButton1Click:Connect(function()
+        ActivePage = name -- Guarda tu posición actual
         for n, p in pairs(Pages) do p.Visible = false end
         for btnName, btnObj in pairs(TabButtons) do 
             TweenService:Create(btnObj, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 105, 115)}):Play()
@@ -411,6 +435,7 @@ local function CreateTab(name, sectionColor)
     return Page
 end
 
+-- UI TOGGLE
 local function AddToggle(page, text, configKey, sectionColor)
     local ToggleFrame = Instance.new("Frame")
     ToggleFrame.Size = UDim2.new(0.92, 0, 0, 38)
@@ -462,6 +487,7 @@ local function AddToggle(page, text, configKey, sectionColor)
     end)
 end
 
+-- UI SLIDER
 local function AddSlider(page, text, min, max, default, configKey, sectionColor)
     local SliderFrame = Instance.new("Frame")
     SliderFrame.Size = UDim2.new(0.92, 0, 0, 48)
@@ -543,6 +569,7 @@ local function AddSlider(page, text, min, max, default, configKey, sectionColor)
     end)
 end
 
+-- UI BUTTON
 local function AddButton(page, text, sectionColor)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(0.92, 0, 0, 36)
@@ -571,20 +598,17 @@ return Button
 end
 
 
--- CREAMOS LAS CATEGORÍAS PRINCIPALES DEL MENÚ
+-- CREACION CATEGORIAS
 local TabMain = CreateTab("Main", Theme.Main)
 local TabCheats = CreateTab("Player Cheats", Theme.Main) 
 local TabCombat = CreateTab("Combat", Theme.Combat)
 local TabVisuals = CreateTab("Visuals", Theme.Visuals)
 local TabMisc = CreateTab("Misc", Theme.Misc)
 
--- SELECCIONA LA PRIMERA PESTAÑA POR DEFECTO
-if Pages["Main"] then
-    Pages["Main"].Visible = true
-    if TabButtons["Main"] then TabButtons["Main"].TextColor3 = Theme.Main end
-end
+-- SELECCIONAR MAIN POR DEFECTO PARA EL INICIO (PERO OCULTO)
+if TabButtons["Main"] then TabButtons["Main"].TextColor3 = Theme.Main end
 
--- PESTAÑA MAIN Y ESTADÍSTICAS DEL JUGADOR
+-- MAIN PERFIL
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Stats = game:GetService("Stats")
@@ -645,7 +669,7 @@ AccountAgeLabel.TextXAlignment = Enum.TextXAlignment.Left
 AccountAgeLabel.BackgroundTransparency = 1
 AccountAgeLabel.Parent = ProfileCard
 
--- TARJETA PARA VER FPS Y PING EN TIEMPO REAL
+-- MAIN RENDIMIENTO
 local PerfCard = Instance.new("Frame")
 PerfCard.Size = UDim2.new(0.94, 0, 0, 60)
 PerfCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -696,7 +720,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- REDES SOCIALES OFICIALES
+-- MAIN SOCIALES
 local SocialCard = Instance.new("Frame")
 SocialCard.Size = UDim2.new(0.94, 0, 0, 110)
 SocialCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -765,7 +789,7 @@ TikTokBtn.MouseButton1Click:Connect(function()
     TikTokBtn.Text = "🎵 TIKTOK OFICIAL (COPIAR)"
 end)
 
--- NOVEDADES Y NOTAS DEL SCRIPT
+-- MAIN NOVEDADES
 local NewsCard = Instance.new("Frame")
 NewsCard.Size = UDim2.new(0.94, 0, 0, 75)
 NewsCard.BackgroundColor3 = Color3.fromRGB(18, 20, 24)
@@ -804,7 +828,7 @@ NewsBody.TextYAlignment = Enum.TextYAlignment.Top
 NewsBody.BackgroundTransparency = 1
 NewsBody.Parent = NewsCard
 
--- AGREGAMOS LAS OPCIONES A LAS PESTAÑAS
+-- FUNCIONES CHEATS
 AddToggle(TabCheats, "Speed Hack", "SpeedEnabled", Theme.Main)
 AddSlider(TabCheats, "Speed Power", 16, 300, 16, "SpeedValue", Theme.Main)
 AddToggle(TabCheats, "Infinity Jump", "InfJump", Theme.Main)
@@ -820,7 +844,7 @@ AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
 
 
--- FUNCIÓN PARA VERIFICAR SI HAY PAREDES ENTRE TÚ Y EL ENEMIGO
+-- LOGICA WALL CHECK
 local function VerificarParedVisibilidad(objetivoParte)
     if not Config.WallCheck then return true end 
     
@@ -835,7 +859,7 @@ local function VerificarParedVisibilidad(objetivoParte)
     return resultado == nil 
 end
 
--- SISTEMA PARA BUSCAR AL ENEMIGO MÁS CERCANO (AIMBOT LOGIC)
+-- LOGICA AIMBOT OBJETIVO
 local function ObtenerEnemigoMasCercano()
     local objetivoCercano = nil
     local distanciaMinima = Config.FOVRadius
@@ -864,7 +888,7 @@ local function ObtenerEnemigoMasCercano()
     return objetivoCercano
 end
 
--- EJECUCIÓN PRINCIPAL DEL AIMBOT Y FOV
+-- LOGICA FOV & AIMBOT MAIN
 RunService.RenderStepped:Connect(function()
     if not Camera or not workspace.CurrentCamera then
         Camera = workspace.CurrentCamera
@@ -898,7 +922,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- PESTAÑA VISUALS Y MISC
+-- VISUALS Y MISC TABS
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Name", "ESPName", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Distancia", "ESPDist", Theme.Visuals)
@@ -911,6 +935,7 @@ local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
+-- LOGICA SERVER HOP
 BtnServerHop.MouseButton1Click:Connect(function()
     BtnServerHop.Text = "Buscando servidor... 🔍"
     local TeleportService = game:GetService("TeleportService")
@@ -944,6 +969,7 @@ BtnServerHop.MouseButton1Click:Connect(function()
     end
 end)
 
+-- LOGICA REJOIN
 BtnRejoin.MouseButton1Click:Connect(function()
     BtnRejoin.Text = "Reconectando... 🔄"
     local TeleportService = game:GetService("TeleportService")
@@ -955,7 +981,7 @@ BtnRejoin.MouseButton1Click:Connect(function()
     end
 end)
 
--- SISTEMA ESP (WALLHACKS)
+-- COLORES ARMAS ESP
 local WeaponColors = {
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
@@ -991,6 +1017,7 @@ local function GetPlayerTool(player)
     return nil
 end
 
+-- LOGICA ESP 
 local function CreateESP(player)
     local box = Drawing.new("Square")
     box.Visible = false
@@ -1113,7 +1140,7 @@ local function CreateESP(player)
                         healthBar.Visible = false
                     end
 
-                    -- TRACES (LÍNEAS)
+                    -- TRACES (LINEAS)
                     if Config.Traces then
                         traceLine.Visible = true
                         traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
@@ -1131,7 +1158,7 @@ local function CreateESP(player)
                 traceLine.Visible = false
             end
         else
-            -- ELIMINAMOS LA BASURA DE LA MEMORIA AL MORIR EL JUGADOR
+            -- CLEANUP MEMORIA 
             box:Destroy()
             nameText:Destroy()
             distText:Destroy()
@@ -1144,7 +1171,7 @@ local function CreateESP(player)
 end
 
 
--- SISTEMA QUE MONITOREA SI ENTRA UN JUGADOR NUEVO A LA SALA
+-- LOGICA MONITOR JUGADORES (ESP)
 local function MonitorPlayer(player)
     if player == LocalPlayer then return end
 
@@ -1186,7 +1213,7 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
--- BYPASS DE ANTI-CHEAT PARA VELOCIDAD Y VUELO
+-- LOGICA BYPASS ANTI-CHEAT (VELOCIDAD/VUELO)
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
@@ -1212,7 +1239,7 @@ task.spawn(function()
     end
 end)
 
--- LOGICA DEL SPEED HACK
+-- LOGICA SPEED HACK
 RunService.Heartbeat:Connect(function()
     if Character and Humanoid and RootPart and Config.SpeedEnabled then
         local MoveDirection = Humanoid.MoveDirection
@@ -1223,7 +1250,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- LOGICA DEL FLY (VUELO)
+-- LOGICA FLY (VUELO)
 local FlyAttachment, AlignOri, LinearVel
 
 RunService.RenderStepped:Connect(function()
@@ -1273,7 +1300,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- LÓGICA DEL NOCLIP (ATRAVESAR PAREDES)
+-- LOGICA NOCLIP
 RunService.Stepped:Connect(function()
     if Config.Noclip and Character then
         for _, part in pairs(Character:GetChildren()) do
@@ -1284,23 +1311,21 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- LÓGICA DEL INFINITY JUMP (SALTOS INFINITOS)
+-- LOGICA INF JUMP
 UserInputService.JumpRequest:Connect(function()
     if Config.InfJump and Character and Humanoid then
         Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
--- LÓGICA DEL SPIN BOT Y OCULTAR NOMBRE
+-- LOGICA SPIN BOT Y HIDE NAME
 RunService.RenderStepped:Connect(function()
     
-    -- GIRA TU PERSONAJE SÚPER RÁPIDO
     if Config.SpinBot and Character and Character:FindFirstChild("HumanoidRootPart") then
         local root = Character.HumanoidRootPart
         root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(Config.SpinSpeed), 0)
     end
 
-    -- ESCONDE TU NOMBRE LOCALMENTE
     if Character then
         local hum = Character:FindFirstChildOfClass("Humanoid")
         if hum then
