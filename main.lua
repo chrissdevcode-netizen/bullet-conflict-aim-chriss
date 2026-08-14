@@ -1159,19 +1159,18 @@ local function CreateESP(player)
             end
         else
             -- CLEANUP MEMORIA 
-            box:Destroy()
-            nameText:Destroy()
-            distText:Destroy()
-            gunText:Destroy()
-            healthBar:Destroy()
-            traceLine:Destroy()
+            box:Remove()
+            nameText:Remove()
+            distText:Remove()
+            gunText:Remove()
+            healthBar:Remove()
+            traceLine:Remove()
             connection:Disconnect()
         end
     end)
 end
 
-
--- LOGICA MONITOR JUGADORES (ESP)
+-- LOGICA MONITOR JUGADORES (ESP LIMPIO Y SIN DUPLICAR)
 local function MonitorPlayer(player)
     if player == LocalPlayer then return end
 
@@ -1197,23 +1196,10 @@ for _, player in pairs(Players:GetPlayers()) do
     MonitorPlayer(player)
 end
 
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        CreateESP(player)
-    end
-end
 
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if player ~= LocalPlayer then
-            player.Character:WaitForChild("HumanoidRootPart", 5)
-            player.Character:WaitForChild("Head", 5)
-            CreateESP(player)
-        end
-    end)
-end)
 
--- LOGICA BYPASS ANTI-CHEAT (VELOCIDAD/VUELO)
+                
+-- LOGICA BYPASS
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
