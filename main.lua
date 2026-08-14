@@ -808,7 +808,7 @@ news_stroke.Parent = NewsCard
 local NewsTitle = Instance.new("TextLabel")
 NewsTitle.Size = UDim2.new(1, -20, 0, 18)
 NewsTitle.Position = UDim2.new(0, 12, 0, 8)
-NewsTitle.Text = "NOVEDADES V1.0 📢"
+NewsTitle.Text = "NOVEDADES V1.3 📢"
 NewsTitle.Font = Enum.Font.GothamBold
 NewsTitle.TextSize = 11
 NewsTitle.TextColor3 = Color3.fromRGB(220, 225, 235)
@@ -819,7 +819,7 @@ NewsTitle.Parent = NewsCard
 local NewsBody = Instance.new("TextLabel")
 NewsBody.Size = UDim2.new(1, -24, 0, 42)
 NewsBody.Position = UDim2.new(0, 12, 0, 28)
-NewsBody.Text = "• Se corrigió el error del aimbot\n• Se añadió la función Hide Name\n• Próximamente Canal de Discord"
+NewsBody.Text = "• SIN NOVEDADES\n• ERROR\n• ERROR"
 NewsBody.Font = Enum.Font.Gotham
 NewsBody.TextSize = 10
 NewsBody.TextColor3 = Color3.fromRGB(160, 165, 175)
@@ -1017,7 +1017,7 @@ local function GetPlayerTool(player)
     return nil
 end
 
--- LOGICA ESP 
+-- LOGICA ESP BLINDADA PARA MÓVIL
 local function CreateESP(player)
     local box = Drawing.new("Square")
     box.Visible = false
@@ -1059,95 +1059,115 @@ local function CreateESP(player)
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") and player.Character:FindFirstChildOfClass("Humanoid") then
-            local character = player.Character
-            local rootPart = character.HumanoidRootPart
-            local head = character.Head
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            local camera = workspace.CurrentCamera
+        -- Verificación estricta de que el jugador y sus partes sigan vivos
+        if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") or not player.Character:FindFirstChild("Head") then
+            box:Remove()
+            nameText:Remove()
+            distText:Remove()
+            gunText:Remove()
+            healthBar:Remove()
+            traceLine:Remove()
+            connection:Disconnect()
+            return
+        end
 
-            local vector, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-            
-            if onScreen then
-                local distance = (camera.CFrame.Position - rootPart.Position).Magnitude
-                local topPos, topOnScreen = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 1.8, 0))
-                local bottomPos, bottomOnScreen = camera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3, 0))
+        local character = player.Character
+        local rootPart = character.HumanoidRootPart
+        local head = character.Head
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local camera = workspace.CurrentCamera
 
-                if topOnScreen and bottomOnScreen then
-                    local boxHeight = math.abs(topPos.Y - bottomPos.Y)
-                    local boxWidth = boxHeight * 0.60 
+        if not camera or not humanoid or humanoid.Health <= 0 then
+            box.Visible = false
+            nameText.Visible = false
+            distText.Visible = false
+            gunText.Visible = false
+            healthBar.Visible = false
+            traceLine.Visible = false
+            return
+        end
 
-                    -- ESP BOX
-                    if Config.ESPBox then
-                        box.Visible = true
-                        box.Position = Vector2.new(vector.X - (boxWidth / 2), topPos.Y)
-                        box.Size = Vector2.new(boxWidth, boxHeight)
-                    else
-                        box.Visible = false
-                    end
+        local vector, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+        
+        if onScreen then
+            local distance = (camera.CFrame.Position - rootPart.Position).Magnitude
+            local topPos, topOnScreen = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
+            local bottomPos, bottomOnScreen = camera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 2.5, 0))
 
-                    -- ESP NAME
-                    if Config.ESPName then
-                        nameText.Visible = true
-                        nameText.Position = Vector2.new(vector.X, topPos.Y - 16)
-                        nameText.Text = player.Name
-                    else
-                        nameText.Visible = false
-                    end
+            if topOnScreen and bottomOnScreen then
+                local boxHeight = math.abs(topPos.Y - bottomPos.Y)
+                local boxWidth = boxHeight * 0.55 
 
-                    -- ESP DISTANCIA
-                    local yOffset = bottomPos.Y + 4
-                    if Config.ESPDist then
-                        distText.Visible = true
-                        distText.Position = Vector2.new(vector.X, yOffset)
-                        distText.Text = string.format("[%d studs]", math.floor(distance))
-                        yOffset = yOffset + 14
-                    else
-                        distText.Visible = false
-                    end
+                -- ESP BOX SEGURO
+                if Config.ESPBox then
+                    box.Visible = true
+                    box.Position = Vector2.new(vector.X - (boxWidth / 2), topPos.Y)
+                    box.Size = Vector2.new(boxWidth, boxHeight)
+                else
+                    box.Visible = false
+                end
 
-                    -- ESP GUN
-                    if Config.ESPGun then
-                        local currentTool = GetPlayerTool(player)
-                        if currentTool then
-                            local weaponName = currentTool.Name
-                            gunText.Visible = true
-                            gunText.Color = WeaponColors[weaponName] or Color3.fromRGB(255, 255, 255)
-                            
-                            if Config.ESPGunDist then
-                                gunText.Text = string.format("%s [%d studs]", weaponName, math.floor(distance))
-                            else
-                                gunText.Text = weaponName
-                            end
-                            gunText.Position = Vector2.new(vector.X, yOffset)
+                -- ESP NAME
+                if Config.ESPName then
+                    nameText.Visible = true
+                    nameText.Position = Vector2.new(vector.X, topPos.Y - 16)
+                    nameText.Text = player.Name
+                else
+                    nameText.Visible = false
+                end
+
+                -- ESP DISTANCIA
+                local yOffset = bottomPos.Y + 2
+                if Config.ESPDist then
+                    distText.Visible = true
+                    distText.Position = Vector2.new(vector.X, yOffset)
+                    distText.Text = string.format("[%d studs]", math.floor(distance))
+                    yOffset = yOffset + 12
+                else
+                    distText.Visible = false
+                end
+
+                -- ESP GUN
+                if Config.ESPGun then
+                    local currentTool = GetPlayerTool(player)
+                    if currentTool then
+                        local weaponName = currentTool.Name
+                        gunText.Visible = true
+                        gunText.Color = WeaponColors[weaponName] or Color3.fromRGB(255, 255, 255)
+                        
+                        if Config.ESPGunDist then
+                            gunText.Text = string.format("%s [%d studs]", weaponName, math.floor(distance))
                         else
-                            gunText.Visible = false
+                            gunText.Text = weaponName
                         end
+                        gunText.Position = Vector2.new(vector.X, yOffset)
                     else
                         gunText.Visible = false
                     end
+                else
+                    gunText.Visible = false
+                end
 
-                    -- ESP HEALTH
-                    if Config.ESPHealth then
-                        healthBar.Visible = true
-                        local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                        local barX = vector.X - (boxWidth / 2) - 6
-                        
-                        healthBar.From = Vector2.new(barX, bottomPos.Y)
-                        healthBar.To = Vector2.new(barX, bottomPos.Y - (boxHeight * healthPercentage))
-                        healthBar.Color = Color3.fromHSV((healthPercentage * 120) / 360, 1, 1)
-                    else
-                        healthBar.Visible = false
-                    end
+                -- ESP HEALTH BAR
+                if Config.ESPHealth then
+                    healthBar.Visible = true
+                    local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                    local barX = vector.X - (boxWidth / 2) - 5
+                    
+                    healthBar.From = Vector2.new(barX, bottomPos.Y)
+                    healthBar.To = Vector2.new(barX, bottomPos.Y - (boxHeight * healthPercentage))
+                    healthBar.Color = Color3.fromHSV((healthPercentage * 120) / 360, 1, 1)
+                else
+                    healthBar.Visible = false
+                end
 
-                    -- TRACES (LINEAS)
-                    if Config.Traces then
-                        traceLine.Visible = true
-                        traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
-                        traceLine.To = Vector2.new(vector.X, topPos.Y)
-                    else
-                        traceLine.Visible = false
-                    end
+                -- TRACES 
+                if Config.Traces then
+                    traceLine.Visible = true
+                    traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
+                    traceLine.To = Vector2.new(vector.X, topPos.Y)
+                else
+                    traceLine.Visible = false
                 end
             else
                 box.Visible = false
@@ -1158,19 +1178,20 @@ local function CreateESP(player)
                 traceLine.Visible = false
             end
         else
-            -- CLEANUP MEMORIA 
-            box:Remove()
-            nameText:Remove()
-            distText:Remove()
-            gunText:Remove()
-            healthBar:Remove()
-            traceLine:Remove()
-            connection:Disconnect()
+            box.Visible = false
+            nameText.Visible = false
+            distText.Visible = false
+            gunText.Visible = false
+            healthBar.Visible = false
+            traceLine.Visible = false
         end
     end)
 end
 
--- LOGICA MONITOR JUGADORES (ESP LIMPIO Y SIN DUPLICAR)
+
+            
+                    
+-- LOGICA MONITOR JUGADORES
 local function MonitorPlayer(player)
     if player == LocalPlayer then return end
 
