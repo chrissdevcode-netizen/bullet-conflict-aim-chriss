@@ -1,6 +1,6 @@
 -- CHRISS HUB | KEY SYSTEM
 
--- 1. ESPERAMOS DE FORMA SEGURA AL JUGADOR PARA NO CRASHEAR
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
@@ -12,14 +12,14 @@ local Lighting = game:GetService("Lighting")
 
 local DatabaseURL = "https://chrisshub-database-default-rtdb.firebaseio.com/"
 
--- 2. PETICIÓN HTTP OPTIMIZADA PARA DELTA
+--  PETICIÓN HTTP 
 local httprequest = request or http_request or (fluxus and fluxus.request)
 if not httprequest then
     LocalPlayer:Kick("Tu ejecutor no soporta peticiones HTTP avanzadas.")
     return
 end
 
--- 3. OBTENER HWID SIN ERRORES DE LOCALPLAYER
+-- OBTENER HWID 
 local function GetHWID()
     local success, result = pcall(function() return RbxAnalytics:GetClientId() end)
     return success and result or tostring(LocalPlayer.UserId .. "-FALLBACK")
@@ -37,7 +37,7 @@ local AuthGui = Instance.new("ScreenGui")
 AuthGui.Name = "ChrissAuthSystemPremium"
 AuthGui.ResetOnSpawn = false
 
--- 4. PCALL PARA EVITAR BLOQUEOS EN EL COREGUI
+--  PCALL PARA EVITAR BLOQUEOS 
 local successParent = pcall(function() AuthGui.Parent = CoreGui end)
 if not successParent then AuthGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
@@ -85,7 +85,7 @@ Glow.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.Position = UDim2.new(0, 0, 0, 15)
-Title.Text = "BULLET CONFLICT PREMIUM ⚡"
+Title.Text = "BULLET CONFLICT PREMIUM "
 Title.Font = Enum.Font.GothamBlack
 Title.TextSize = 22
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -239,11 +239,11 @@ local function IniciarValidacion()
         local sysReq = httprequest({Url = DatabaseURL .. "system_status.json", Method = "GET"})
         local sysStatus = HttpService:JSONDecode(sysReq.Body)
 
-        -- 2. Descargar llave
+        --  Descargar llave
         local keyReq = httprequest({Url = DatabaseURL .. "keys/" .. userKey .. ".json", Method = "GET"})
         local keyData = HttpService:JSONDecode(keyReq.Body)
 
-        -- 3. Validaciones
+        --  Validaciones
         if not keyData or keyData == "null" then
             StatusLabel.Text = "❌ Llave inválida o eliminada."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -268,7 +268,7 @@ local function IniciarValidacion()
             return
         end
 
-        -- 4. HWID
+        -- HWID
         local used_hwids = keyData.used_hwids or {}
         local hwidEncontrado = false
 
@@ -305,7 +305,7 @@ local function IniciarValidacion()
             end
         end
 
-        -- 5. ACCESO
+        -- ACCESO
         StatusLabel.Text = "✅ ¡Acceso Concedido! Cargando sistema..."
         StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 120)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 255, 120)
@@ -334,7 +334,7 @@ local function IniciarValidacion()
 end
 
 CheckBtn.MouseButton1Click:Connect(function()
-    -- task.spawn hace que el internet no congele el juego y evita el crasheo en Delta
+    -- task.spawn 
     task.spawn(function()
         IniciarValidacion()
     end)
