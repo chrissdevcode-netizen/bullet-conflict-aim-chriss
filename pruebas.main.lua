@@ -333,7 +333,13 @@ local function IniciarValidacion()
     end
 end
 
-CheckBtn.MouseButton1Click:Connect(IniciarValidacion)
+CheckBtn.MouseButton1Click:Connect(function()
+    -- task.spawn hace que el internet no congele el juego y evita el crasheo en Delta
+    task.spawn(function()
+        IniciarValidacion()
+    end)
+end)
+
 
 
 
