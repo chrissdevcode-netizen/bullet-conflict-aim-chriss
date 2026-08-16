@@ -1,5 +1,4 @@
--- CHRISS HUB | KEY SYSTEM
-
+-- CHRISS HUB | KEY SYSTEM V2 NEON 
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
@@ -41,9 +40,6 @@ AuthGui.ResetOnSpawn = false
 local successParent = pcall(function() AuthGui.Parent = CoreGui end)
 if not successParent then AuthGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
-
-
-
 local Overlay = Instance.new("Frame")
 Overlay.Size = UDim2.new(1, 0, 1, 0)
 Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -82,16 +78,34 @@ Glow.ImageTransparency = 1
 Glow.ZIndex = 0
 Glow.Parent = MainFrame
 
+-- 🔥 TITULO DORADO CON ANIMACIÓN DE BRILLO 🔥
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.Position = UDim2.new(0, 0, 0, 15)
-Title.Text = "BULLET CONFLICT PREMIUM "
+Title.Text = "BULLET CONFLICT PREMIUM ⚡"
 Title.Font = Enum.Font.GothamBlack
 Title.TextSize = 22
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255) -- Color base (será sobreescrito por el gradiente)
 Title.BackgroundTransparency = 1
 Title.TextTransparency = 1
 Title.Parent = MainFrame
+
+local TitleGradient = Instance.new("UIGradient")
+TitleGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 180, 0)),      -- Oro oscuro
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 150)),  -- Brillo blanco/amarillo
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 180, 0))       -- Oro oscuro
+})
+TitleGradient.Rotation = 0
+TitleGradient.Parent = Title
+
+-- Animación del brillo dorado moviéndose de un lado a otro
+task.spawn(function()
+    TitleGradient.Offset = Vector2.new(-0.8, 0)
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
+    local gradientTween = TweenService:Create(TitleGradient, tweenInfo, {Offset = Vector2.new(0.8, 0)})
+    gradientTween:Play()
+end)
 
 --  BOTÓN DE CERRAR 
 local CloseBtn = Instance.new("TextButton")
@@ -209,7 +223,8 @@ CheckBtn.MouseButton1Up:Connect(function()
 end)
 
 
--- LÓGICA DE SERVIDOR Y VALIDACIÓN 
+
+-- 🔥 LÓGICA DE SERVIDOR Y VALIDACIÓN 
 local isChecking = false
 
 local function IniciarValidacion()
@@ -235,15 +250,15 @@ local function IniciarValidacion()
     CheckBtn.Text = "VERIFICANDO..."
     
     local success, err = pcall(function()
-        -- 1. Checar mantenimiento
+        --  Checar mantenimiento global
         local sysReq = httprequest({Url = DatabaseURL .. "system_status.json", Method = "GET"})
         local sysStatus = HttpService:JSONDecode(sysReq.Body)
 
-        --  Descargar llave
+        --  Descargar datos de la llave
         local keyReq = httprequest({Url = DatabaseURL .. "keys/" .. userKey .. ".json", Method = "GET"})
         local keyData = HttpService:JSONDecode(keyReq.Body)
 
-        --  Validaciones
+        --  Validar Existencia
         if not keyData or keyData == "null" then
             StatusLabel.Text = "❌ Llave inválida o eliminada."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -252,6 +267,16 @@ local function IniciarValidacion()
             return
         end
 
+        --  Validar Blacklist (Baneo Manual)
+        if keyData.status == "blacklisted" then
+            StatusLabel.Text = "⛔ Llave Baneada por el Administrador."
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+            CheckBtn.Text = "INICIAR SESIÓN"
+            isChecking = false
+            return
+        end
+
+        -- Validar Pausa o Mantenimiento
         if keyData.status == "paused" or (sysStatus and sysStatus.vip_paused and keyData.type == "VIP") then
             StatusLabel.Text = "⏸️ Sistema en Mantenimiento."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
@@ -260,7 +285,33 @@ local function IniciarValidacion()
             return
         end
 
-        if os.time() > keyData.expires_at then
+        local currentTime = os.time()
+
+        --  ACTIVACIÓN POR HWID 
+        if keyData.expires_at == 0 then
+            local duration = keyData.duration_seconds or 0
+            if duration > 0 then
+                local newExpiration = currentTime + duration
+                keyData.expires_at = newExpiration
+                
+                -- Guardar nueva fecha en Firebase
+                httprequest({
+                    Url = DatabaseURL .. "keys/" .. userKey .. "/expires_at.json",
+                    Method = "PUT",
+                    Body = HttpService:JSONEncode(newExpiration),
+                    Headers = {["Content-Type"] = "application/json"}
+                })
+            else
+                StatusLabel.Text = "❌ Error en los datos de duración."
+                StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+                CheckBtn.Text = "INICIAR SESIÓN"
+                isChecking = false
+                return
+            end
+        end
+
+        --  Validar Expiración
+        if currentTime > keyData.expires_at then
             StatusLabel.Text = "🔴 Tu llave ha expirado."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
             CheckBtn.Text = "INICIAR SESIÓN"
@@ -268,7 +319,7 @@ local function IniciarValidacion()
             return
         end
 
-        -- HWID
+        -- Validar Límite de HWID
         local used_hwids = keyData.used_hwids or {}
         local hwidEncontrado = false
 
@@ -305,7 +356,9 @@ local function IniciarValidacion()
             end
         end
 
-        -- ACCESO
+        
+        --  ACCESO CONCEDIDO
+        
         StatusLabel.Text = "✅ ¡Acceso Concedido! Cargando sistema..."
         StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 120)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 255, 120)
@@ -321,7 +374,7 @@ local function IniciarValidacion()
         AuthGui:Destroy()
         BlurEffect:Destroy()
         
-        -- Ejecuta tu script
+        -- Ejecuta tu script principal
         IniciarScriptPrincipal()
     end)
 
@@ -334,16 +387,15 @@ local function IniciarValidacion()
 end
 
 CheckBtn.MouseButton1Click:Connect(function()
-    -- task.spawn 
     task.spawn(function()
         IniciarValidacion()
     end)
 end)
 
 
-
-
 function IniciarScriptPrincipal()
+    
+
 
 
 
