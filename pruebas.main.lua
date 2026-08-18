@@ -1809,7 +1809,39 @@ UserInputService.JumpRequest:Connect(function()
     if Config.InfJump and Character and Humanoid then
         Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
+end
+
+
+--  LÓGICA DE INVISIBILIDAD
+local OriginalTransparencies = {}
+
+RunService.RenderStepped:Connect(function()
+    if Config.Invisibility and Character then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") or part:IsA("Decal") then
+                -- Guardamos la transparencia original la primera vez
+                if OriginalTransparencies[part] == nil then
+                    OriginalTransparencies[part] = part.Transparency
+                end
+                
+                -- Volvemos invisible todo menos el RootPart (para no romper las físicas)
+                if part.Name ~= "HumanoidRootPart" then
+                    part.Transparency = 1
+                end
+            end
+        end
+    elseif not Config.Invisibility and Character then
+        -- Restauramos todo a la normalidad si se apaga
+        for part, trans in pairs(OriginalTransparencies) do
+            if part and part.Parent then
+                part.Transparency = trans
+            end
+        end
+        table.clear(OriginalTransparencies)
+    end
 end)
+        
+        
 
 -- LOGICA SPIN BOT Y HIDE NAME
 RunService.RenderStepped:Connect(function()
@@ -1839,4 +1871,60 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+ 
+-- 👀 LÓGICA BALAS MÁGICAS (WALLBANG)
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+
+    -- Interceptamos tu FireEvent exacto
+    if Config.MagicBullets and method == "FireServer" and self.Name == "FireEvent" then
+        local target = ObtenerEnemigoMasCercano() -- Usamos la función de tu Aimbot
+        
+        if target then
+            local origen = args[1]
+            
+            if typeof(origen) == "Vector3" then
+                -- Calculamos un láser perfecto desde tu arma hasta la cabeza del enemigo
+                local nuevaDireccion = (target.Position - origen).Unit
+                
+                -- Reemplazamos el args[2] (Dirección) con nuestra dirección mágica
+                args[2] = nuevaDireccion
+                
+                -- TRUCO EXTRA: Si quieres que rompa todo, movemos el origen de la bala 
+                -- a 2 studs de la cara del enemigo (comenta la siguiente línea si te da lag)
+                -- args[1] = target.Position - (nuevaDireccion * 2) 
+                
+                return oldNamecall(self, unpack(args))
+            end
+        end
+    end
+
+    return oldNamecall(self, unpack(args))
+end)
+        
+
+-- 🚗 LÓGICA AUTO SKIP (CAJAS Y RULETAS)
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+PlayerGui.ChildAdded:Connect(function(gui)
+    if Config.AutoSkipCar then
+        -- Le damos una milésima para que el juego le asigne nombre a la interfaz
+        task.wait(0.05) 
+        
+        local guiName = string.lower(gui.Name)
+        
+    
+        if string.find(guiName, "crate") or string.find(guiName, "spin") or 
+           string.find(guiName, "roulette") or string.find(guiName, "open") or 
+           string.find(guiName, "car") or string.find(guiName, "case") then
+            
+            gui:Destroy()
+            print("🚗 Ruleta saltada exitosamente")
+        end
+    end
+end)
+        
 end
