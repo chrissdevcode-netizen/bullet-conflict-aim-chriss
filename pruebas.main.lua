@@ -1251,6 +1251,7 @@ AddSlider(TabCheats, "Speed Power", 16, 300, 16, "SpeedValue", Theme.Main)
 AddToggle(TabCheats, "Infinity Jump", "InfJump", Theme.Main)
 AddToggle(TabCheats, "Noclip", "Noclip", Theme.Main)
 AddToggle(TabCheats, "Fly (Vuelo)", "Fly", Theme.Main)
+AddToggle(TabCheats, "Invisibilidad 👻", "Invisibility", Theme.Main)   
 AddToggle(TabCheats, "Hide Name 👤", "HideName", Theme.Main)
 AddToggle(TabCheats, "Spin Bot 🌀", "SpinBot", Theme.Main)
 AddSlider(TabCheats, "Spin Speed", 10, 150, 30, "SpinSpeed", Theme.Main)
@@ -1259,7 +1260,7 @@ AddToggle(TabCombat, "Aimbot", "AimbotEnabled", Theme.Combat)
 AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
 AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
-
+AddToggle(TabCombat, "Balas Mágicas ", "MagicBullets", Theme.Combat)
 
 -- LOGICA WALL CHECK
 local function VerificarParedVisibilidad(objetivoParte)
@@ -1351,7 +1352,7 @@ AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
-
+AddToggle(TabMisc, "Auto Skip Car", "AutoSkipCar", Theme.Misc)
 -- LOGICA SERVER HOP
 BtnServerHop.MouseButton1Click:Connect(function()
     BtnServerHop.Text = "Buscando servidor... 🔍"
