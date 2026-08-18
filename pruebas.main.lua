@@ -457,11 +457,13 @@ local Config = {
     Noclip = false, 
     Fly = false, 
     SpinBot = false,      
-    SpinSpeed = 30,       
+    SpinSpeed = 30,
+    Invisibility = false,
     HideName = false,     
     
     -- Combat
     AimbotEnabled = false,
+    MagicBullets = false,    
     SilentAim = false,
     FOVEnabled = false, 
     FOVRadius = 100,
@@ -478,8 +480,12 @@ local Config = {
     ESPGun = false, 
     ESPGunDist = false,
     
+    
+    
+
     -- Misc
-    LockUI = false
+    LockUI = false,
+    AutoSkipCar = false
 }
 
 -- TEMAS
@@ -1871,31 +1877,52 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
- 
--- 👀 LÓGICA BALAS MÁGICAS (WALLBANG)
+-- ==========================================
+-- 🧠 SILENT AIM PRO (WALLBANG EDITION) - INTEGRADO
+-- ==========================================
+-- Función exclusiva para el Silent Aim (IGNORA PAREDES)
+local function GetSilentTarget()
+    local bestTarget = nil
+    local shortestDistance = Config.FOVRadius 
+    -- Como tu FOV está en el centro, usamos el centro de la pantalla
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local partToShoot = player.Character:FindFirstChild(Config.TargetPart) or player.Character:FindFirstChild("Head")
+            
+            if partToShoot then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(partToShoot.Position)
+                if onScreen then
+                    local distance = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                    
+                    -- NO HAY WALLCHECK: Si está en el círculo, la bala lo atraviesa todo
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        bestTarget = partToShoot
+                    end
+                end
+            end
+        end
+    end
+    return bestTarget
+end
+
+-- Hook para interceptar la bala
 local oldNamecall
 oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
-    -- Interceptamos tu FireEvent exacto
-    if Config.MagicBullets and method == "FireServer" and self.Name == "FireEvent" then
-        local target = ObtenerEnemigoMasCercano() -- Usamos la función de tu Aimbot
+    -- Funciona si enciendes "Silent Aim" o "Balas Mágicas"
+    if (Config.SilentAim or Config.MagicBullets) and method == "FireServer" and tostring(self) == "FireEvent" then
+        local target = GetSilentTarget()
         
         if target then
-            local origen = args[1]
-            
-            if typeof(origen) == "Vector3" then
-                -- Calculamos un láser perfecto desde tu arma hasta la cabeza del enemigo
-                local nuevaDireccion = (target.Position - origen).Unit
-                
-                -- Reemplazamos el args[2] (Dirección) con nuestra dirección mágica
-                args[2] = nuevaDireccion
-                
-                -- TRUCO EXTRA: Si quieres que rompa todo, movemos el origen de la bala 
-                -- a 2 studs de la cara del enemigo (comenta la siguiente línea si te da lag)
-                -- args[1] = target.Position - (nuevaDireccion * 2) 
-                
+            local origin = args[1]
+            if typeof(origin) == "Vector3" then
+                -- Matemáticas: Inyectar la trayectoria perfecta a la cabeza
+                args[2] = (target.Position - origin).Unit
                 return oldNamecall(self, unpack(args))
             end
         end
@@ -1903,20 +1930,16 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
 
     return oldNamecall(self, unpack(args))
 end)
-        
 
--- 🚗 LÓGICA AUTO SKIP (CAJAS Y RULETAS)
 
+-- 🚗 LÓGICA AUTO SKIP 
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 PlayerGui.ChildAdded:Connect(function(gui)
     if Config.AutoSkipCar then
-        -- Le damos una milésima para que el juego le asigne nombre a la interfaz
         task.wait(0.05) 
-        
         local guiName = string.lower(gui.Name)
         
-    
         if string.find(guiName, "crate") or string.find(guiName, "spin") or 
            string.find(guiName, "roulette") or string.find(guiName, "open") or 
            string.find(guiName, "car") or string.find(guiName, "case") then
@@ -1927,4 +1950,5 @@ PlayerGui.ChildAdded:Connect(function(gui)
     end
 end)
         
-end
+end -- 
+    
