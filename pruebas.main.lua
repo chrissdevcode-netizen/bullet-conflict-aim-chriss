@@ -448,6 +448,27 @@ fovStroke.Parent = fovFrame
 fovStroke.Thickness = 1.5
 fovStroke.Color = Color3.fromRGB(255, 255, 255)
 
+
+-- FOV CIRCLE SILENT AIM (ROJO)
+local silentFovFrame = Instance.new("Frame")
+local silentCorner = Instance.new("UICorner")
+local silentStroke = Instance.new("UIStroke")
+
+silentFovFrame.Name = "SilentFovCircle"
+silentFovFrame.Parent = fovGui
+silentFovFrame.BackgroundTransparency = 1
+silentFovFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+silentFovFrame.Position = UDim2.new(0.5, 0, 0.5, 0) 
+silentFovFrame.Visible = false
+
+silentCorner.CornerRadius = UDim.new(1, 0)
+silentCorner.Parent = silentFovFrame
+
+silentStroke.Parent = silentFovFrame
+silentStroke.Thickness = 1.5
+silentStroke.Color = Color3.fromRGB(255, 80, 80) -- ROJO PARA BALAS MÁGICAS
+    
+
 -- VARIABLES Y CONFIGURACIONES
 local Config = {
     -- Cheats
@@ -461,15 +482,19 @@ local Config = {
     Invisibility = false,
     HideName = false,     
     
-    -- Combat
+    -- Combat (Aimbot Normal)
     AimbotEnabled = false,
-    MagicBullets = false,    
-    SilentAim = false,
     FOVEnabled = false, 
     FOVRadius = 100,
     WallCheck = true,
     TargetPart = "HumanoidRootPart",
     
+    -- Combat (Silent Aim / Balas Mágicas)
+    MagicBullets = false,    
+    SilentAim = false,
+    SilentFOVEnabled = false, 
+    SilentFOVRadius = 100,    
+
     -- Visuals
     Fullbright = false,
     ESPBox = false, 
@@ -479,14 +504,12 @@ local Config = {
     Traces = false,
     ESPGun = false, 
     ESPGunDist = false,
-    
-    
-    
 
     -- Misc
     LockUI = false,
     AutoSkipCar = false
-}
+    }
+    
 
 -- TEMAS
 local Theme = {
@@ -1263,10 +1286,12 @@ AddToggle(TabCheats, "Spin Bot 🌀", "SpinBot", Theme.Main)
 AddSlider(TabCheats, "Spin Speed", 10, 150, 30, "SpinSpeed", Theme.Main)
 
 AddToggle(TabCombat, "Aimbot", "AimbotEnabled", Theme.Combat)
+AddToggle(TabCombat, "Show FOV Aimbot", "FOVEnabled", Theme.Combat)
 AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
-AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
-AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
-AddToggle(TabCombat, "Balas Mágicas ", "MagicBullets", Theme.Combat)
+AddToggle(TabCombat, "Balas Mágicas / Silent", "MagicBullets", Theme.Combat)
+AddToggle(TabCombat, "Show FOV Silent", "SilentFOVEnabled", Theme.Combat)
+AddSlider(TabCombat, "Silent FOV Radio", 30, 300, 100, "SilentFOVRadius", Theme.Combat)
+    
 
 -- LOGICA WALL CHECK
 local function VerificarParedVisibilidad(objetivoParte)
@@ -1312,12 +1337,25 @@ local function ObtenerEnemigoMasCercano()
     return objetivoCercano
 end
 
--- LOGICA FOV & AIMBOT MAIN
-RunService.RenderStepped:Connect(function()
-    if not Camera or not workspace.CurrentCamera then
-        Camera = workspace.CurrentCamera
-        return
+
+      
+    
+-- RENDERIZADO DEL FOV NORMAL (AIMBOT)
+    if Config.FOVEnabled then
+        fovFrame.Visible = true
+        fovFrame.Size = UDim2.fromOffset(Config.FOVRadius * 2, Config.FOVRadius * 2)
+    else
+        fovFrame.Visible = false
     end
+    
+    -- RENDERIZADO DEL FOV SILENT AIM (ROJO)
+    if Config.SilentFOVEnabled then
+        silentFovFrame.Visible = true
+        silentFovFrame.Size = UDim2.fromOffset(Config.SilentFOVRadius * 2, Config.SilentFOVRadius * 2)
+    else
+        silentFovFrame.Visible = false
+    end
+    
     
     --NEW FOV🔥
     if Config.FOVEnabled then
@@ -1343,6 +1381,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
+    
 
 
 -- VISUALS Y MISC TABS
@@ -1877,14 +1916,14 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==========================================
--- 🧠 SILENT AIM PRO (WALLBANG EDITION) - INTEGRADO
--- ==========================================
--- Función exclusiva para el Silent Aim (IGNORA PAREDES)
+
+
+--  SILENT AIM PRO (WALLBANG)  
+
 local function GetSilentTarget()
     local bestTarget = nil
-    local shortestDistance = Config.FOVRadius 
-    -- Como tu FOV está en el centro, usamos el centro de la pantalla
+    -- AHORA USA EL RADIO EXCLUSIVO DEL SILENT FOV
+    local shortestDistance = Config.SilentFOVRadius 
     local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
     for _, player in pairs(Players:GetPlayers()) do
@@ -1896,8 +1935,7 @@ local function GetSilentTarget()
                 if onScreen then
                     local distance = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
                     
-                    -- NO HAY WALLCHECK: Si está en el círculo, la bala lo atraviesa todo
-                    if distance < shortestDistance then
+                    if distance <= shortestDistance then
                         shortestDistance = distance
                         bestTarget = partToShoot
                     end
@@ -1908,27 +1946,34 @@ local function GetSilentTarget()
     return bestTarget
 end
 
--- Hook para interceptar la bala
+-- Hook Anti-Crasheo para Delta
 local oldNamecall
 oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
-    local args = {...}
-
-    -- Funciona si enciendes "Silent Aim" o "Balas Mágicas"
-    if (Config.SilentAim or Config.MagicBullets) and method == "FireServer" and tostring(self) == "FireEvent" then
-        local target = GetSilentTarget()
-        
-        if target then
-            local origin = args[1]
-            if typeof(origin) == "Vector3" then
-                -- Matemáticas: Inyectar la trayectoria perfecta a la cabeza
-                args[2] = (target.Position - origin).Unit
-                return oldNamecall(self, unpack(args))
+    
+    -- Verificamos que sea el cliente disparando (anti-crash de delta)
+    if not checkcaller() and (Config.SilentAim or Config.MagicBullets) and method == "FireServer" then
+        -- Validación segura para evitar el error "attempt to call nil"
+        if typeof(self) == "Instance" and self.Name == "FireEvent" then
+            local target = GetSilentTarget()
+            
+            if target then
+                local args = {...}
+                local origin = args[1]
+                
+                if typeof(origin) == "Vector3" then
+                    -- Modificamos la trayectoria
+                    args[2] = (target.Position - origin).Unit
+                    
+                    -- Retornamos los argumentos modificados
+                    return oldNamecall(self, unpack(args))
+                end
             end
         end
     end
 
-    return oldNamecall(self, unpack(args))
+    -- Si no disparamos a nadie, pasamos los argumentos INTACTOS (esto evita el 99% de los errores en Delta)
+    return oldNamecall(self, ...)
 end)
 
 
