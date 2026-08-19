@@ -70,7 +70,8 @@ local Config = {
     SpeedValue = 16, 
     SpeedEnabled = false, 
     InfJump = false, 
-    Noclip = false, 
+    Noclip = false,
+    Invisibility = false,
     Fly = false, 
     SpinBot = false,      
     SpinSpeed = 30,       
@@ -96,6 +97,7 @@ local Config = {
     
     -- Misc
     LockUI = false
+    AutoSkipCar = false
 }
 
 -- TEMAS
