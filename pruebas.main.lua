@@ -1338,9 +1338,15 @@ local function ObtenerEnemigoMasCercano()
 end
 
 
-      
+-- LOGICA FOV & AIMBOT MAIN
+
+RunService.RenderStepped:Connect(function()
+    if not Camera or not workspace.CurrentCamera then
+        Camera = workspace.CurrentCamera
+        return
+    end
     
--- RENDERIZADO DEL FOV NORMAL (AIMBOT)
+    --  RENDERIZADO DEL FOV NORMAL (AIMBOT - VERDE)
     if Config.FOVEnabled then
         fovFrame.Visible = true
         fovFrame.Size = UDim2.fromOffset(Config.FOVRadius * 2, Config.FOVRadius * 2)
@@ -1348,7 +1354,7 @@ end
         fovFrame.Visible = false
     end
     
-    -- RENDERIZADO DEL FOV SILENT AIM (ROJO)
+    -- RENDERIZADO DEL FOV SILENT AIM (BALAS MÁGICAS - ROJO)
     if Config.SilentFOVEnabled then
         silentFovFrame.Visible = true
         silentFovFrame.Size = UDim2.fromOffset(Config.SilentFOVRadius * 2, Config.SilentFOVRadius * 2)
@@ -1356,15 +1362,7 @@ end
         silentFovFrame.Visible = false
     end
     
-    
-    --NEW FOV🔥
-    if Config.FOVEnabled then
-        fovFrame.Visible = true
-        fovFrame.Size = UDim2.fromOffset(Config.FOVRadius * 2, Config.FOVRadius * 2)
-    else
-        fovFrame.Visible = false
-    end
-    
+    --  LÓGICA DE APUNTADO Y COLOR DEL ANILLO
     if Config.AimbotEnabled or Config.FOVEnabled then
         local objetivo = ObtenerEnemigoMasCercano()
         
@@ -1381,6 +1379,10 @@ end
         end
     end
 end)
+    
+      
+    
+ 
     
 
 
