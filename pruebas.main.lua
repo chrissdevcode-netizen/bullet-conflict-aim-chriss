@@ -1948,14 +1948,14 @@ local function GetSilentTarget()
     return bestTarget
 end
 
--- Hook Anti-Crasheo para Delta
+-- Hook Anti-Crasheo para Delta (PARCHE TABLE.UNPACK) 🛡️
 local oldNamecall
 oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     
     -- Verificamos que sea el cliente disparando (anti-crash de delta)
     if not checkcaller() and (Config.SilentAim or Config.MagicBullets) and method == "FireServer" then
-        -- Validación segura para evitar el error "attempt to call nil"
+        -- Validación segura
         if typeof(self) == "Instance" and self.Name == "FireEvent" then
             local target = GetSilentTarget()
             
@@ -1964,17 +1964,17 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
                 local origin = args[1]
                 
                 if typeof(origin) == "Vector3" then
-                    -- Modificamos la trayectoria
+                    -- Modificamos la trayectoria directo a la cabeza
                     args[2] = (target.Position - origin).Unit
                     
-                    -- Retornamos los argumentos modificados
-                    return oldNamecall(self, unpack(args))
+                    -- 🔥 EL FIX: Usamos table.unpack en lugar de unpack 🔥
+                    return oldNamecall(self, table.unpack(args))
                 end
             end
         end
     end
 
-    -- Si no disparamos a nadie, pasamos los argumentos INTACTOS (esto evita el 99% de los errores en Delta)
+    -- Si no disparamos a nadie, dejamos la bala normal
     return oldNamecall(self, ...)
 end)
 
@@ -1997,5 +1997,8 @@ PlayerGui.ChildAdded:Connect(function(gui)
     end
 end)
         
-end -- 
+end -- CIERRE DEL SCRIPT PRINCIPAL
     
+
+
+
