@@ -14,7 +14,7 @@ local Config = {
     AutoUltimate = false
 }
 
--- 🎨 CREACIÓN DE LA INTERFAZ EXPANDIDA
+--  INTERFAZ 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
@@ -98,9 +98,7 @@ CreateToggle(85, "Comprar Regular", "AutoRegular")
 CreateToggle(125, "Comprar Ultimate", "AutoUltimate")
 
 
--- ==========================================
--- 🤖 MOTOR 1: AUTO PESCA (Rápido)
--- ==========================================
+--  MOTOR  AUTO PESCA 
 task.spawn(function()
     while task.wait(2.5) do
         if Config.AutoFish then
@@ -114,7 +112,7 @@ task.spawn(function()
     end
 end)
 
--- 🛒 MOTOR 2: AUTO COMPRA
+--AUTO COMPRA
 task.spawn(function()
     while task.wait(30) do 
         if Config.AutoRegular then
