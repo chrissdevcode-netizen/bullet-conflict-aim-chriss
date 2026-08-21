@@ -123,7 +123,7 @@ task.spawn(function()
             end)
         end
         
-        task.wait(1.5) -- Pausa táctica por si tienes los dos encendidos, para que el juego no te banee por spam
+        task.wait(1.5) 
         
         if Config.AutoUltimate then
             pcall(function()
