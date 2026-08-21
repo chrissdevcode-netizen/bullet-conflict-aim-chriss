@@ -58,8 +58,7 @@ local Config = {
     SpeedValue = 16, 
     SpeedEnabled = false, 
     InfJump = false, 
-    Noclip = false, 
-    Fly = false, 
+    Noclip = false,  
     SpinBot = false,      
     SpinSpeed = 30,       
     HideName = false,     
@@ -854,7 +853,6 @@ AddToggle(TabCheats, "Speed Hack", "SpeedEnabled", Theme.Main)
 AddSlider(TabCheats, "Speed Power", 16, 300, 16, "SpeedValue", Theme.Main)
 AddToggle(TabCheats, "Infinity Jump", "InfJump", Theme.Main)
 AddToggle(TabCheats, "Noclip", "Noclip", Theme.Main)
-AddToggle(TabCheats, "Fly (Vuelo)", "Fly", Theme.Main)
 AddToggle(TabCheats, "Hide Name 👤", "HideName", Theme.Main)
 AddToggle(TabCheats, "Spin Bot 🌀", "SpinBot", Theme.Main)
 AddSlider(TabCheats, "Spin Speed", 10, 150, 30, "SpinSpeed", Theme.Main)
