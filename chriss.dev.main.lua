@@ -1930,7 +1930,7 @@ local function CreateToggle(yPos, text, configKey)
     end)
 end
 
--- 🔘 AGREGAMOS LOS 3 BOTONES
+--   3 BOTONES
 CreateToggle(45, "Auto Pescar", "AutoFish")
 CreateToggle(85, "Comprar Regular", "AutoRegular")
 CreateToggle(125, "Comprar Ultimate", "AutoUltimate")
@@ -1971,6 +1971,280 @@ task.spawn(function()
         end
     end
 end)
+
+
+-- SNAP V3RSION 2
+
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local IsSnap = false
+local IsUILocked = false
+
+local LocalFloor = nil
+local FloorLoop = nil
+local TargetFloorY = 0 -- Guarda la altura exacta del piso para que no salgas volando
+
+local SnapLevel = 3 -- Nivel por defecto 
+local ActiveDepth = 0 -- Profundidad real en uso
+local DepthMultiplier = 8 
+
+--  INTERFAZPANEL SNAP
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SnapStandalone"
+ScreenGui.ResetOnSpawn = false
+
+local success = pcall(function() ScreenGui.Parent = CoreGui end)
+if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+-- Contenedor Principal (Más alto para que quepa el slider)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 170, 0, 105)
+MainFrame.Position = UDim2.new(0.5, -85, 0.15, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(160, 80, 255)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = MainFrame
+
+--Botón LOCK
+local LockBtn = Instance.new("TextButton")
+LockBtn.Size = UDim2.new(1, 0, 0, 22)
+LockBtn.Position = UDim2.new(0, 0, 0, 0)
+LockBtn.BackgroundColor3 = Color3.fromRGB(30, 33, 40)
+LockBtn.Text = "🔓 DESBLOQUEADO"
+LockBtn.Font = Enum.Font.GothamBold
+LockBtn.TextSize = 10
+LockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+LockBtn.Parent = MainFrame
+
+local LockCorner = Instance.new("UICorner")
+LockCorner.CornerRadius = UDim.new(0, 8)
+LockCorner.Parent = LockBtn
+
+-- Botón SNAP 
+local SnapBtn = Instance.new("TextButton")
+SnapBtn.Size = UDim2.new(1, -16, 0, 32)
+SnapBtn.Position = UDim2.new(0, 8, 0, 28)
+SnapBtn.BackgroundColor3 = Color3.fromRGB(80, 85, 100) 
+SnapBtn.Text = " SNAP/ OFF"
+SnapBtn.Font = Enum.Font.GothamBlack
+SnapBtn.TextSize = 13
+SnapBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SnapBtn.Parent = MainFrame
+
+local SnapCorner = Instance.new("UICorner")
+SnapCorner.CornerRadius = UDim.new(0, 6)
+SnapCorner.Parent = SnapBtn
+
+-- 🎚️ SLIDER DE PROFUNDIDAD (1 al 10)
+local SliderFrame = Instance.new("Frame")
+SliderFrame.Size = UDim2.new(1, -16, 0, 30)
+SliderFrame.Position = UDim2.new(0, 8, 0, 68)
+SliderFrame.BackgroundTransparency = 1
+SliderFrame.Parent = MainFrame
+
+local SliderText = Instance.new("TextLabel")
+SliderText.Size = UDim2.new(1, 0, 0, 15)
+SliderText.Position = UDim2.new(0, 0, 0, 0)
+SliderText.BackgroundTransparency = 1
+SliderText.Text = "Profundidad: " .. SnapLevel
+SliderText.Font = Enum.Font.GothamBold
+SliderText.TextSize = 10
+SliderText.TextColor3 = Color3.fromRGB(200, 200, 200)
+SliderText.Parent = SliderFrame
+
+local SliderBar = Instance.new("TextButton")
+SliderBar.Size = UDim2.new(1, 0, 0, 8)
+SliderBar.Position = UDim2.new(0, 0, 0, 18)
+SliderBar.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+SliderBar.Text = ""
+SliderBar.AutoButtonColor = false
+SliderBar.Parent = SliderFrame
+local SBCorner = Instance.new("UICorner")
+SBCorner.CornerRadius = UDim.new(1, 0)
+SBCorner.Parent = SliderBar
+
+local SliderFill = Instance.new("Frame")
+SliderFill.Size = UDim2.new((SnapLevel - 1) / 9, 0, 1, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(160, 80, 255)
+SliderFill.Parent = SliderBar
+local SFCorner = Instance.new("UICorner")
+SFCorner.CornerRadius = UDim.new(1, 0)
+SFCorner.Parent = SliderFill
+
+--  LÓGICA DE ARRASTRE FLUIDO 
+local draggingMenu, dragInputMenu, dragStartMenu, startPosMenu
+local targetPosMenu = MainFrame.Position
+
+LockBtn.InputBegan:Connect(function(input)
+    if IsUILocked then return end 
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingMenu = true
+        dragStartMenu = input.Position
+        startPosMenu = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then draggingMenu = false end
+        end)
+    end
+end)
+
+LockBtn.InputChanged:Connect(function(input)
+    if not IsUILocked and draggingMenu and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then 
+        dragInputMenu = input 
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if draggingMenu and dragInputMenu and not IsUILocked then
+        local delta = dragInputMenu.Position - dragStartMenu
+        targetPosMenu = UDim2.new(startPosMenu.X.Scale, startPosMenu.X.Offset + delta.X, startPosMenu.Y.Scale, startPosMenu.Y.Offset + delta.Y)
+    end
+    MainFrame.Position = MainFrame.Position:Lerp(targetPosMenu, 0.2)
+end)
+
+--  LÓGICA DEL CANDADO
+LockBtn.MouseButton1Click:Connect(function()
+    IsUILocked = not IsUILocked
+    if IsUILocked then
+        LockBtn.Text = " BLOQUEADO"
+        LockBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        UIStroke.Color = Color3.fromRGB(100, 100, 100)
+        SliderFill.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    else
+        LockBtn.Text = " DESBLOQUEADO"
+        LockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        UIStroke.Color = Color3.fromRGB(160, 80, 255)
+        SliderFill.BackgroundColor3 = Color3.fromRGB(160, 80, 255)
+    end
+end)
+
+-- 🎚️ LÓGICA DEL SLIDER 
+local sliding = false
+local function UpdateSlider(input)
+    if IsUILocked then return end
+    
+    local percentage = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+    
+    SnapLevel = math.floor(1 + (percentage * 9))
+    SliderText.Text = "Profundidad: " .. SnapLevel
+    
+    -- ⚡ EL FLEX: Te mueve en tiempo real si estás bajo tierra
+    if IsSnap then
+        local Character = LocalPlayer.Character
+        if Character and Character:FindFirstChild("HumanoidRootPart") then
+            local targetRealDepth = SnapLevel * DepthMultiplier
+            local diff = targetRealDepth - ActiveDepth
+            
+            if diff ~= 0 then
+                Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame - Vector3.new(0, diff, 0)
+                TargetFloorY = TargetFloorY - diff -- Baja o sube el piso de cristal al instante
+                ActiveDepth = targetRealDepth
+            end
+        end
+    end
+end
+
+SliderBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        sliding = true
+        UpdateSlider(input)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        UpdateSlider(input)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        sliding = false
+    end
+end)
+
+--  LÓGICA DE SNAP (
+local function UpdateSnapVisuals()
+    if IsSnap then
+        SnapBtn.BackgroundColor3 = Color3.fromRGB(160, 80, 255)
+        SnapBtn.Text = "SNAP/ ON"
+    else
+        SnapBtn.BackgroundColor3 = Color3.fromRGB(80, 85, 100)
+        SnapBtn.Text = "SNAP/ OFF"
+    end
+end
+
+SnapBtn.MouseButton1Click:Connect(function()
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+    if not RootPart then return end
+
+    IsSnap = not IsSnap
+    UpdateSnapVisuals()
+    
+    if IsSnap then
+        ActiveDepth = SnapLevel * DepthMultiplier
+        
+        --  TE BAJS SEGÚN EL SLIDER
+        RootPart.CFrame = RootPart.CFrame - Vector3.new(0, ActiveDepth, 0)
+        
+        --  FIJAMOS LA ALTURA DEL PISO PARA NO SALIR VOLANDO AL SALTAR
+        TargetFloorY = RootPart.Position.Y - 3.2
+        
+        --  CREAMOS  PISO MÁGICO INVISIBLE
+        LocalFloor = Instance.new("Part")
+        LocalFloor.Size = Vector3.new(30, 2, 30) -- Plataforma grandota
+        LocalFloor.Anchored = true
+        LocalFloor.Transparency = 1 
+        LocalFloor.CanCollide = true
+        LocalFloor.Parent = workspace
+        
+        --  EL PISO TE PERSIGUE HORIZONTALMENTE
+        FloorLoop = RunService.Heartbeat:Connect(function()
+            if Character and Character:FindFirstChild("HumanoidRootPart") and LocalFloor then
+                local currentPos = Character.HumanoidRootPart.Position
+                -- Mantiene Y estático (TargetFloorY) para que el salto funcione perfecto
+                LocalFloor.Position = Vector3.new(currentPos.X, TargetFloorY, currentPos.Z)
+            end
+        end)
+    else
+        --  TE SUBE EXACTAMENTE LO QUE BAJASTE
+        RootPart.CFrame = RootPart.CFrame + Vector3.new(0, ActiveDepth, 0)
+        ActiveDepth = 0
+        
+        --  DESTRUCCIÓN DEL PISO
+        if FloorLoop then FloorLoop:Disconnect(); FloorLoop = nil end
+        if LocalFloor then LocalFloor:Destroy(); LocalFloor = nil end
+    end
+end)
+
+--  PROTECCIÓN AL MORIR
+LocalPlayer.CharacterAdded:Connect(function()
+    if IsSnap then
+        IsSnap = false
+        ActiveDepth = 0
+        UpdateSnapVisuals()
+        if FloorLoop then FloorLoop:Disconnect(); FloorLoop = nil end
+        if LocalFloor then LocalFloor:Destroy(); LocalFloor = nil end
+    end
+end)
+    
+    
     
 
 end
