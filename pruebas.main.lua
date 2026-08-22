@@ -2,41 +2,16 @@
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
-
 local HttpService = game:GetService("HttpService")
 local RbxAnalytics = game:GetService("RbxAnalyticsService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 
-
-
--- URLs  DE DATOS
+-- URLs DE DATOS 
 local MyFirebaseURL = "https://chrisshub-database-default-rtdb.firebaseio.com/"
 local FriendKeysURL = "https://dekiuthub.myartsonline.com/premium_keys.json"
 local FriendFreeURL = "https://dekiuthub.myartsonline.com/keys.json"
-
-
-    
-        local keyData = nil
-        local reqFirebase = httprequest({Url = MyFirebaseURL .. "keys/" .. userKey .. ".json", Method = "GET"})
-        if reqFirebase and reqFirebase.StatusCode == 200 and reqFirebase.Body ~= "null" then
-            keyData = HttpService:JSONDecode(reqFirebase.Body)
-        end
-
-
-        if not keyData then
-            local targetURL = string.find(userKey, "FREE") and FriendFreeURL or FriendKeysURL
-            local reqFriend = httprequest({Url = targetURL, Method = "GET"})
-            
-            if reqFriend and reqFriend.StatusCode == 200 then
-                local allKeys = HttpService:JSONDecode(reqFriend.Body)
-                if allKeys then 
-                    keyData = allKeys[userKey] 
-                end
-            end
-         end
-
 
 --  PETICIÓN HTTP 
 local httprequest = request or http_request or (fluxus and fluxus.request)
@@ -45,12 +20,14 @@ if not httprequest then
     return
 end
 
--- OBTENER HWID 
+--  OBTENER HWID 
 local function GetHWID()
     local success, result = pcall(function() return RbxAnalytics:GetClientId() end)
     return success and result or tostring(LocalPlayer.UserId .. "-FALLBACK")
 end
 local MyHWID = GetHWID()
+
+
 
 -- Efecto de Desenfoque Cinemático
 local BlurEffect = Instance.new("BlurEffect")
