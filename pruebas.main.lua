@@ -1,33 +1,29 @@
--- CHRISS HUB | KEY SYSTEM V2 NEON 
+-- CHRISS HUB | KEY SYSTEM V2 NEON
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+
 local HttpService = game:GetService("HttpService")
 local RbxAnalytics = game:GetService("RbxAnalyticsService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 
--- URLs DE DATOS 
-local MyFirebaseURL = "https://chrisshub-database-default-rtdb.firebaseio.com/"
-local FriendKeysURL = "https://dekiuthub.myartsonline.com/premium_keys.json"
-local FriendFreeURL = "https://dekiuthub.myartsonline.com/keys.json"
+local DatabaseURL = "https://chrisshub-database-default-rtdb.firebaseio.com/"
 
---  PETICIÓN HTTP 
+-- PETICIÓN HTTP 
 local httprequest = request or http_request or (fluxus and fluxus.request)
 if not httprequest then
     LocalPlayer:Kick("Tu ejecutor no soporta peticiones HTTP avanzadas.")
     return
 end
 
---  OBTENER HWID 
+-- OBTENER HWID 
 local function GetHWID()
     local success, result = pcall(function() return RbxAnalytics:GetClientId() end)
     return success and result or tostring(LocalPlayer.UserId .. "-FALLBACK")
 end
 local MyHWID = GetHWID()
-
-
 
 -- Efecto de Desenfoque Cinemático
 local BlurEffect = Instance.new("BlurEffect")
@@ -40,7 +36,6 @@ local AuthGui = Instance.new("ScreenGui")
 AuthGui.Name = "ChrissAuthSystemPremium"
 AuthGui.ResetOnSpawn = false
 
---  PCALL PARA EVITAR BLOQUEOS 
 local successParent = pcall(function() AuthGui.Parent = CoreGui end)
 if not successParent then AuthGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
@@ -50,7 +45,7 @@ Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Overlay.BackgroundTransparency = 1
 Overlay.BorderSizePixel = 0
 Overlay.Parent = AuthGui
-TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 0.6}):Play()
+TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 0.7}):Play()
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 0, 0, 0) 
@@ -72,7 +67,7 @@ UIStroke.Transparency = 1
 UIStroke.Parent = MainFrame
 
 local Glow = Instance.new("ImageLabel")
-Glow.Size = UDim2.new(1, 60, 1, 60)
+Glow.Size = UDim2.new(1, 80, 1, 80)
 Glow.Position = UDim2.new(0.5, 0, 0.5, 0)
 Glow.AnchorPoint = Vector2.new(0.5, 0.5)
 Glow.BackgroundTransparency = 1
@@ -82,36 +77,43 @@ Glow.ImageTransparency = 1
 Glow.ZIndex = 0
 Glow.Parent = MainFrame
 
+-- ANIMACIÓN DE "RESPIRACIÓN" DEL NEÓN
+task.spawn(function()
+    while MainFrame.Parent do
+        TweenService:Create(Glow, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageTransparency = 0.4}):Play()
+        task.wait(2)
+        TweenService:Create(Glow, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageTransparency = 0.8}):Play()
+        task.wait(2)
+    end
+end)
+
 -- 🔥 TITULO DORADO CON ANIMACIÓN DE BRILLO 🔥
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Position = UDim2.new(0, 0, 0, 15)
-Title.Text = "BULLET CONFLICT PREMIUM ⚡"
+Title.Position = UDim2.new(0, 0, 0, 20) -- Ligeramente más abajo para deslizarse
+Title.Text = "BULLET CONFLICT PAID SCRIPT"
 Title.Font = Enum.Font.GothamBlack
 Title.TextSize = 22
-Title.TextColor3 = Color3.fromRGB(255, 255, 255) -- Color base (será sobreescrito por el gradiente)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.TextTransparency = 1
 Title.Parent = MainFrame
 
 local TitleGradient = Instance.new("UIGradient")
 TitleGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 180, 0)),      -- Oro oscuro
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 150)),  -- Brillo blanco/amarillo
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 180, 0))       -- Oro oscuro
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 180, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 150)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 180, 0))
 })
 TitleGradient.Rotation = 0
 TitleGradient.Parent = Title
 
--- Animación del brillo dorado moviéndose de un lado a otro
 task.spawn(function()
     TitleGradient.Offset = Vector2.new(-0.8, 0)
     local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
-    local gradientTween = TweenService:Create(TitleGradient, tweenInfo, {Offset = Vector2.new(0.8, 0)})
-    gradientTween:Play()
+    TweenService:Create(TitleGradient, tweenInfo, {Offset = Vector2.new(0.8, 0)}):Play()
 end)
 
---  BOTÓN DE CERRAR 
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -35, 0, 10)
@@ -123,15 +125,10 @@ CloseBtn.BackgroundTransparency = 1
 CloseBtn.TextTransparency = 1
 CloseBtn.Parent = MainFrame
 
-CloseBtn.MouseEnter:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 80, 80)}):Play()
-end)
-CloseBtn.MouseLeave:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
-end)
+CloseBtn.MouseEnter:Connect(function() TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 80, 80)}):Play() end)
+CloseBtn.MouseLeave:Connect(function() TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play() end)
 
 CloseBtn.MouseButton1Click:Connect(function()
-    -- Animación de cierre y destrucción
     TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)}):Play()
     TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
     TweenService:Create(BlurEffect, TweenInfo.new(0.5), {Size = 0}):Play()
@@ -142,7 +139,7 @@ end)
 
 local KeyInput = Instance.new("TextBox")
 KeyInput.Size = UDim2.new(0.85, 0, 0, 48)
-KeyInput.Position = UDim2.new(0.5, 0, 0.42, 0)
+KeyInput.Position = UDim2.new(0.5, 0, 0.45, 0) -- Posición inicial abajo
 KeyInput.AnchorPoint = Vector2.new(0.5, 0.5)
 KeyInput.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
 KeyInput.Text = ""
@@ -151,6 +148,7 @@ KeyInput.Font = Enum.Font.Gotham
 KeyInput.TextSize = 13
 KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 KeyInput.TextTransparency = 1
+KeyInput.BackgroundTransparency = 1
 KeyInput.Parent = MainFrame
 
 local InputCorner = Instance.new("UICorner")
@@ -160,11 +158,12 @@ InputCorner.Parent = KeyInput
 local InputStroke = Instance.new("UIStroke")
 InputStroke.Color = Color3.fromRGB(60, 65, 80)
 InputStroke.Thickness = 1.5
+InputStroke.Transparency = 1
 InputStroke.Parent = KeyInput
 
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 20)
-StatusLabel.Position = UDim2.new(0.5, 0, 0.62, 0)
+StatusLabel.Position = UDim2.new(0.5, 0, 0.65, 0)
 StatusLabel.AnchorPoint = Vector2.new(0.5, 0.5)
 StatusLabel.Text = "Estado: Esperando validación"
 StatusLabel.Font = Enum.Font.GothamMedium
@@ -176,7 +175,7 @@ StatusLabel.Parent = MainFrame
 
 local CheckBtn = Instance.new("TextButton")
 CheckBtn.Size = UDim2.new(0.85, 0, 0, 45)
-CheckBtn.Position = UDim2.new(0.5, 0, 0.82, 0)
+CheckBtn.Position = UDim2.new(0.5, 0, 0.85, 0)
 CheckBtn.AnchorPoint = Vector2.new(0.5, 0.5)
 CheckBtn.BackgroundColor3 = Color3.fromRGB(160, 80, 255)
 CheckBtn.Text = "INICIAR SESIÓN"
@@ -184,6 +183,7 @@ CheckBtn.Font = Enum.Font.GothamBold
 CheckBtn.TextSize = 14
 CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CheckBtn.TextTransparency = 1
+CheckBtn.BackgroundTransparency = 1
 CheckBtn.AutoButtonColor = false
 CheckBtn.Parent = MainFrame
 
@@ -191,41 +191,135 @@ local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = CheckBtn
 
--- Animaciones de Entrada
-local OpenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+-- =======================================================
+-- ⛔ ELEMENTOS DE LA PANTALLA DE BANEO (Ocultos al inicio)
+-- =======================================================
+local BanTitle = Instance.new("TextLabel")
+BanTitle.Size = UDim2.new(1, 0, 0, 30)
+BanTitle.Position = UDim2.new(0.5, 0, 0.15, 0)
+BanTitle.AnchorPoint = Vector2.new(0.5, 0)
+BanTitle.Text = "⛔ ACCESO BANEADO"
+BanTitle.Font = Enum.Font.GothamBlack
+BanTitle.TextSize = 24
+BanTitle.TextColor3 = Color3.fromRGB(255, 60, 60)
+BanTitle.BackgroundTransparency = 1
+BanTitle.TextTransparency = 1
+BanTitle.Parent = MainFrame
+
+local BanInfoText = Instance.new("TextLabel")
+BanInfoText.Size = UDim2.new(0.85, 0, 0, 50)
+BanInfoText.Position = UDim2.new(0.5, 0, 0.3, 0)
+BanInfoText.AnchorPoint = Vector2.new(0.5, 0)
+BanInfoText.Text = "Tu licencia ha sido revocada permanentemente. Aún puedes apelar tu sanción abriendo un Ticket en nuestro Discord."
+BanInfoText.Font = Enum.Font.Gotham
+BanInfoText.TextSize = 12
+BanInfoText.TextColor3 = Color3.fromRGB(200, 200, 200)
+BanInfoText.BackgroundTransparency = 1
+BanInfoText.TextWrapped = true
+BanInfoText.TextTransparency = 1
+BanInfoText.Parent = MainFrame
+
+local BanReasonBox = Instance.new("TextLabel")
+BanReasonBox.Size = UDim2.new(0.85, 0, 0, 55)
+BanReasonBox.Position = UDim2.new(0.5, 0, 0.52, 0)
+BanReasonBox.AnchorPoint = Vector2.new(0.5, 0)
+BanReasonBox.BackgroundColor3 = Color3.fromRGB(40, 10, 10)
+BanReasonBox.Text = "Motivo: N/A"
+BanReasonBox.Font = Enum.Font.GothamBold
+BanReasonBox.TextSize = 13
+BanReasonBox.TextColor3 = Color3.fromRGB(255, 100, 100)
+BanReasonBox.BackgroundTransparency = 1
+BanReasonBox.TextWrapped = true
+BanReasonBox.TextTransparency = 1
+BanReasonBox.Parent = MainFrame
+
+local ReasonCorner = Instance.new("UICorner")
+ReasonCorner.CornerRadius = UDim.new(0, 8)
+ReasonCorner.Parent = BanReasonBox
+local ReasonStroke = Instance.new("UIStroke")
+ReasonStroke.Color = Color3.fromRGB(255, 60, 60)
+ReasonStroke.Transparency = 1
+ReasonStroke.Parent = BanReasonBox
+
+local CopyBanBtn = Instance.new("TextButton")
+CopyBanBtn.Size = UDim2.new(0.85, 0, 0, 40)
+CopyBanBtn.Position = UDim2.new(0.5, 0, 0.8, 0)
+CopyBanBtn.AnchorPoint = Vector2.new(0.5, 0)
+CopyBanBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+CopyBanBtn.Text = "COPIAR MOTIVO Y ABRIR TICKET"
+CopyBanBtn.Font = Enum.Font.GothamBold
+CopyBanBtn.TextSize = 12
+CopyBanBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CopyBanBtn.BackgroundTransparency = 1
+CopyBanBtn.TextTransparency = 1
+CopyBanBtn.Parent = MainFrame
+local CopyCorner = Instance.new("UICorner")
+CopyCorner.CornerRadius = UDim.new(0, 8)
+CopyCorner.Parent = CopyBanBtn
+
+CopyBanBtn.MouseButton1Click:Connect(function()
+    local set_clip = setclipboard or toclipboard or set_clipboard
+    if set_clip then
+        set_clip(BanReasonBox.Text)
+        CopyBanBtn.Text = "¡MOTIVO COPIADO AL PORTAPAPELES!"
+        CopyBanBtn.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
+        task.wait(2)
+        CopyBanBtn.Text = "COPIAR MOTIVO Y ABRIR TICKET"
+        CopyBanBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+    end
+end)
+
+-- ANIMACIONES DE ENTRADA DESLIZANTES
+local OpenInfo = TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 TweenService:Create(MainFrame, OpenInfo, {Size = UDim2.new(0, 380, 0, 260)}):Play()
 TweenService:Create(UIStroke, TweenInfo.new(0.8), {Transparency = 0}):Play()
-TweenService:Create(Glow, TweenInfo.new(1), {ImageTransparency = 0.7}):Play()
 
-task.wait(0.3)
-local FadeInfo = TweenInfo.new(0.4)
-TweenService:Create(Title, FadeInfo, {TextTransparency = 0}):Play()
-TweenService:Create(CloseBtn, FadeInfo, {TextTransparency = 0}):Play()
-TweenService:Create(KeyInput, FadeInfo, {TextTransparency = 0}):Play()
-TweenService:Create(StatusLabel, FadeInfo, {TextTransparency = 0}):Play()
-TweenService:Create(CheckBtn, FadeInfo, {TextTransparency = 0}):Play()
+task.wait(0.2)
+TweenService:Create(Title, TweenInfo.new(0.5), {TextTransparency = 0, Position = UDim2.new(0, 0, 0, 15)}):Play()
+TweenService:Create(CloseBtn, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+task.wait(0.1)
+TweenService:Create(KeyInput, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0, Position = UDim2.new(0.5, 0, 0.42, 0)}):Play()
+TweenService:Create(InputStroke, TweenInfo.new(0.5), {Transparency = 0}):Play()
+task.wait(0.1)
+TweenService:Create(StatusLabel, TweenInfo.new(0.5), {TextTransparency = 0, Position = UDim2.new(0.5, 0, 0.62, 0)}):Play()
+task.wait(0.1)
+TweenService:Create(CheckBtn, TweenInfo.new(0.5), {TextTransparency = 0, BackgroundTransparency = 0, Position = UDim2.new(0.5, 0, 0.82, 0)}):Play()
 
 -- Efectos del Input y Botón
-KeyInput.Focused:Connect(function()
-    TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(160, 80, 255)}):Play()
-end)
-KeyInput.FocusLost:Connect(function()
-    TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(60, 65, 80)}):Play()
-end)
+KeyInput.Focused:Connect(function() TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(160, 80, 255)}):Play() end)
+KeyInput.FocusLost:Connect(function() TweenService:Create(InputStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(60, 65, 80)}):Play() end)
+CheckBtn.MouseEnter:Connect(function() TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(180, 110, 255)}):Play() end)
+CheckBtn.MouseLeave:Connect(function() TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 80, 255)}):Play() end)
+CheckBtn.MouseButton1Down:Connect(function() TweenService:Create(CheckBtn, TweenInfo.new(0.1), {Size = UDim2.new(0.82, 0, 0, 42)}):Play() end)
+CheckBtn.MouseButton1Up:Connect(function() TweenService:Create(CheckBtn, TweenInfo.new(0.1), {Size = UDim2.new(0.85, 0, 0, 45)}):Play() end)
 
-CheckBtn.MouseEnter:Connect(function()
-    TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(180, 110, 255)}):Play()
-end)
-CheckBtn.MouseLeave:Connect(function()
-    TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(160, 80, 255)}):Play()
-end)
-CheckBtn.MouseButton1Down:Connect(function()
-    TweenService:Create(CheckBtn, TweenInfo.new(0.1), {Size = UDim2.new(0.82, 0, 0, 42)}):Play()
-end)
-CheckBtn.MouseButton1Up:Connect(function()
-    TweenService:Create(CheckBtn, TweenInfo.new(0.1), {Size = UDim2.new(0.85, 0, 0, 45)}):Play()
-end)
-
+local function MostrarPantallaBaneo(motivo)
+    --  Desvanecer la interfaz de Login
+    TweenService:Create(Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+    TweenService:Create(KeyInput, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+    TweenService:Create(InputStroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+    TweenService:Create(CheckBtn, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+    TweenService:Create(StatusLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+    
+    task.wait(0.3)
+    
+    -- Transformar colores de la ventana a ROJO ALERTA
+    TweenService:Create(UIStroke, TweenInfo.new(0.6), {Color = Color3.fromRGB(255, 40, 40)}):Play()
+    TweenService:Create(Glow, TweenInfo.new(0.6), {ImageColor3 = Color3.fromRGB(255, 40, 40)}):Play()
+    
+    -- 3Agrandar la ventana para que quepa el texto
+    TweenService:Create(MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 420, 0, 320)}):Play()
+    
+    task.wait(0.4)
+    
+    -- 4. Mostrar panel de apelación
+    BanReasonBox.Text = 'MOTIVO: "' .. motivo .. '"'
+    TweenService:Create(BanTitle, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+    TweenService:Create(BanInfoText, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+    TweenService:Create(BanReasonBox, TweenInfo.new(0.4), {TextTransparency = 0, BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(ReasonStroke, TweenInfo.new(0.4), {Transparency = 0}):Play()
+    TweenService:Create(CopyBanBtn, TweenInfo.new(0.4), {TextTransparency = 0, BackgroundTransparency = 0}):Play()
+end
 
 
 -- 🔥 LÓGICA DE SERVIDOR Y VALIDACIÓN 
@@ -238,7 +332,6 @@ local function IniciarValidacion()
     if userKey == "" then
         StatusLabel.Text = "❌ Campo vacío, ingresa tu llave."
         StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-        
         local originalPos = MainFrame.Position
         for i = 1, 4 do
             MainFrame.Position = originalPos + UDim2.new(0, math.random(-5, 5), 0, 0)
@@ -254,15 +347,12 @@ local function IniciarValidacion()
     CheckBtn.Text = "VERIFICANDO..."
     
     local success, err = pcall(function()
-        --  Checar mantenimiento global
         local sysReq = httprequest({Url = DatabaseURL .. "system_status.json", Method = "GET"})
         local sysStatus = HttpService:JSONDecode(sysReq.Body)
 
-        --  Descargar datos de la llave
         local keyReq = httprequest({Url = DatabaseURL .. "keys/" .. userKey .. ".json", Method = "GET"})
         local keyData = HttpService:JSONDecode(keyReq.Body)
 
-        --  Validar Existencia
         if not keyData or keyData == "null" then
             StatusLabel.Text = "❌ Llave inválida o eliminada."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -271,16 +361,17 @@ local function IniciarValidacion()
             return
         end
 
-        --  Validar Blacklist (Baneo Manual)
+
         if keyData.status == "blacklisted" then
-            StatusLabel.Text = "⛔ Llave Baneada por el Administrador."
-            StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-            CheckBtn.Text = "INICIAR SESIÓN"
+            local razonBaneo = keyData.ban_reason or "Violación severa a las reglas de la comunidad."
+            if razonBaneo == "" then razonBaneo = "Comportamiento sospechoso / Uso indebido." end
+            
+            -- ¡Activa la metamorfosis de la ventana!
+            MostrarPantallaBaneo(razonBaneo)
             isChecking = false
             return
         end
 
-        -- Validar Pausa o Mantenimiento
         if keyData.status == "paused" or (sysStatus and sysStatus.vip_paused and keyData.type == "VIP") then
             StatusLabel.Text = "⏸️ Sistema en Mantenimiento."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
@@ -291,14 +382,11 @@ local function IniciarValidacion()
 
         local currentTime = os.time()
 
-        --  ACTIVACIÓN POR HWID 
         if keyData.expires_at == 0 then
             local duration = keyData.duration_seconds or 0
             if duration > 0 then
                 local newExpiration = currentTime + duration
                 keyData.expires_at = newExpiration
-                
-                -- Guardar nueva fecha en Firebase
                 httprequest({
                     Url = DatabaseURL .. "keys/" .. userKey .. "/expires_at.json",
                     Method = "PUT",
@@ -314,7 +402,6 @@ local function IniciarValidacion()
             end
         end
 
-        --  Validar Expiración
         if currentTime > keyData.expires_at then
             StatusLabel.Text = "🔴 Tu llave ha expirado."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -323,7 +410,6 @@ local function IniciarValidacion()
             return
         end
 
-        -- Validar Límite de HWID
         local used_hwids = keyData.used_hwids or {}
         local hwidEncontrado = false
 
@@ -359,10 +445,8 @@ local function IniciarValidacion()
                 return
             end
         end
-
         
         --  ACCESO CONCEDIDO
-        
         StatusLabel.Text = "✅ ¡Acceso Concedido! Cargando sistema..."
         StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 120)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 255, 120)
@@ -378,7 +462,6 @@ local function IniciarValidacion()
         AuthGui:Destroy()
         BlurEffect:Destroy()
         
-        -- Ejecuta tu script principal
         IniciarScriptPrincipal()
     end)
 
@@ -390,21 +473,18 @@ local function IniciarValidacion()
     end
 end
 
-
-
 CheckBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
         IniciarValidacion()
     end)
 end)
 
-
-
-
-
-
-
 function IniciarScriptPrincipal()
+    
+
+
+
+
 
 
     
