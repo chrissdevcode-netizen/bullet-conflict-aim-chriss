@@ -82,7 +82,7 @@ Glow.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.Position = UDim2.new(0, 0, 0, 15)
-Title.Text = "BULLET CONFLICT PREMIUM ⚡"
+Title.Text = "BULLET CONFLICT PAID SCRIPT"
 Title.Font = Enum.Font.GothamBlack
 Title.TextSize = 22
 Title.TextColor3 = Color3.fromRGB(255, 255, 255) -- Color base (será sobreescrito por el gradiente)
@@ -278,7 +278,7 @@ local function IniciarValidacion()
 
         -- Validar Pausa o Mantenimiento
         if keyData.status == "paused" or (sysStatus and sysStatus.vip_paused and keyData.type == "VIP") then
-            StatusLabel.Text = "⏸️ Sistema en Mantenimiento."
+            StatusLabel.Text = "Sistema en Mantenimiento."
             StatusLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
             CheckBtn.Text = "INICIAR SESIÓN"
             isChecking = false
