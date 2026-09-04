@@ -1,4 +1,5 @@
--- CHRISS HUB | KEY SYSTEM V2 NEON
+
+-- CHRISS DEVELOPER UPDATE 1.5 | KEY SYSTEM V2
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
