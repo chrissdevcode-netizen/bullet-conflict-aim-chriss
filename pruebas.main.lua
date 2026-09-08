@@ -542,10 +542,11 @@ fovStroke.Parent = fovFrame
 fovStroke.Thickness = 1.5
 fovStroke.Color = Color3.fromRGB(255, 255, 255)
 
--- VARIABLES Y CONFIGURACIONES
-local Config = {
+
+    local Config = {
     -- Cheats
-    SpeedValue = 16, 
+    SpeedValue = 16,
+    SnapLines = false,  
     SpeedEnabled = false, 
     InfJump = false, 
     Noclip = false,  
@@ -560,6 +561,7 @@ local Config = {
     FOVRadius = 100,
     WallCheck = true,
     TargetPart = "HumanoidRootPart",
+    AntiKill = false,        -- Nueva variable
     
     -- Visuals
     Fullbright = false,
@@ -571,9 +573,13 @@ local Config = {
     ESPGun = false, 
     ESPGunDist = false,
     
-    -- Misc
-    LockUI = false
-}
+    
+    -- Misc & Farming
+    LockUI = false,
+    AutoFarm = false,        -- Nueva variable
+    AutoSkipBuy = false      -- Nueva variable
+    }
+    
 
 -- TEMAS
 local Theme = {
@@ -1347,10 +1353,14 @@ AddToggle(TabCheats, "Hide Name 👤", "HideName", Theme.Main)
 AddToggle(TabCheats, "Spin Bot 🌀", "SpinBot", Theme.Main)
 AddSlider(TabCheats, "Spin Speed", 10, 150, 30, "SpinSpeed", Theme.Main)
 
+-- abCombat
 AddToggle(TabCombat, "Aimbot", "AimbotEnabled", Theme.Combat)
 AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
 AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
+AddToggle(TabCombat, "SNAP", "SnapLines", Theme.Combat)
+AddToggle(TabCombat, "Anti-Kill", "AntiKill", Theme.Combat)
+    
 
 
 -- LOGICA WALL CHECK
@@ -1442,8 +1452,8 @@ AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
 
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
-AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
-
+AddToggle(TabMisc, "Auto Farm", "AutoFarm", Theme.Misc)
+AddToggle(TabMisc, "Auto Skip (Compras) 🚗", "AutoSkipBuy", Theme.Misc)
 -- LOGICA SERVER HOP
 BtnServerHop.MouseButton1Click:Connect(function()
     BtnServerHop.Text = "Buscando servidor... 🔍"
