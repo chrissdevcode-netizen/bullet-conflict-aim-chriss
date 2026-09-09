@@ -1185,12 +1185,12 @@ for _, p in pairs(Players:GetPlayers()) do
     AddESP(p)
 end
 
--- MOTOR ÚNICO DE RENDERIZADO (NO MÁS BUCLES MÚLTIPLES)
+-- MOTOR DE RENDERIZADO 
 RunService.RenderStepped:Connect(function()
     local camera = workspace.CurrentCamera
     if not camera then return end
 
-    -- EL PUNTO DE ORIGEN PARA LAS LÍNEAS (ABAJO EN EL CENTRO)
+
     local screenBottomCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
 
     for player, cache in pairs(espCache) do
@@ -1199,7 +1199,7 @@ RunService.RenderStepped:Connect(function()
         local rootPart = character and character:FindFirstChild("HumanoidRootPart")
         local head = character and character:FindFirstChild("Head")
 
-        -- SI ESTÁ MUERTO O FUERA, APAGAMOS TODO
+        -- SI ESTÁ MUERTO O FUERA, ELIMINAR XD
         if not character or not humanoid or humanoid.Health <= 0 or not rootPart or not head then
             cache.Highlight.Enabled = false
             cache.Highlight.Adornee = nil
@@ -1476,12 +1476,12 @@ if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 240, 0, 175)
-MainFrame.Position = UDim2.new(0.5, -120, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20) -- Tono Dark Night
+MainFrame.Position = UDim2.new(0.5, -120, 0.2, 0
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true 
-MainFrame.Visible = false -- Inicia oculto hasta que enciendas el AutoFarm principal
+MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -1489,7 +1489,7 @@ UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Cyan Neon
+UIStroke.Color = Color3.fromRGB(0, 255, 255) 
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
