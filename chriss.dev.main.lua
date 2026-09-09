@@ -955,9 +955,22 @@ AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
 
+-- Pestaña Misc
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
-AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
+
+-- TOGGLE MAESTRO (Controla el Menú Flotante de Pesca)
+AddToggle(TabMisc, "Auto Farm 🎣", "AutoFarm", Theme.Misc, function(Value)
+    Config.AutoFarm = Value
+    
+    -- Si tu librería no actualiza Config.AutoFarm automáticamente,
+    -- esta función callback asegura que el menú flotante se muestre/oculte.
+    if MainFrame then
+        MainFrame.Visible = Value
+    end
+end)
+
+AddToggle(TabMisc, "Auto Skip", "AutoSkipBuy", Theme.Misc)
 
 -- LOGICA SERVER HOP
 BtnServerHop.MouseButton1Click:Connect(function()
