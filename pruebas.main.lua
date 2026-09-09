@@ -543,8 +543,15 @@ fovStroke.Thickness = 1.5
 fovStroke.Color = Color3.fromRGB(255, 255, 255)
 
 
-    local Config = {
-    -- Cheats
+    
+    --  TABLA DE CONFIGURACIÓN 
+local Config = {
+    -- Auto Fish & Shop
+    AutoFish = false,
+    AutoRegular = false,
+    AutoUltimate = false,
+    
+    -- Cheats & Combat (
     SpeedValue = 16,
     SnapLines = false,  
     SpeedEnabled = false, 
@@ -553,15 +560,13 @@ fovStroke.Color = Color3.fromRGB(255, 255, 255)
     SpinBot = false,      
     SpinSpeed = 30,       
     HideName = false,     
-    
-    -- Combat
     AimbotEnabled = false,
     SilentAim = false,
     FOVEnabled = false, 
     FOVRadius = 100,
     WallCheck = true,
     TargetPart = "HumanoidRootPart",
-    AntiKill = false,        -- Nueva variable
+    AntiKill = false,
     
     -- Visuals
     Fullbright = false,
@@ -573,13 +578,11 @@ fovStroke.Color = Color3.fromRGB(255, 255, 255)
     ESPGun = false, 
     ESPGunDist = false,
     
-    
     -- Misc & Farming
     LockUI = false,
-    AutoFarm = false,        -- Nueva variable
-    AutoSkipBuy = false      -- Nueva variable
+    AutoFarm = false,        -- Toggle maestro que controla la visibilidad
+    AutoSkipBuy = false      
     }
-    
 
 -- TEMAS
 local Theme = {
@@ -1900,14 +1903,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Variables de Estado
-local Config = {
-    AutoFish = false,
-    AutoRegular = false,
-    AutoUltimate = false
-}
-
---  INTERFAZ 
+--  INTERFAZ DE PESCA (STANDALONE) 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
@@ -1916,12 +1912,13 @@ local success = pcall(function() ScreenGui.Parent = CoreGui end)
 if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 240, 0, 175) -- Más grande para que quepan los botones
+MainFrame.Size = UDim2.new(0, 240, 0, 175)
 MainFrame.Position = UDim2.new(0.5, -120, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20) -- Tono Dark Night
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true 
+MainFrame.Visible = false 
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -1929,7 +1926,7 @@ UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(50, 255, 140)
+UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Cyan Neon
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
@@ -1943,7 +1940,7 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
 
--- Función creadora de botones para ahorrar espacio
+-- Función creadora de botones
 local function CreateToggle(yPos, text, configKey)
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(0.6, 0, 0, 30)
@@ -1959,7 +1956,7 @@ local function CreateToggle(yPos, text, configKey)
     local ToggleBtn = Instance.new("TextButton")
     ToggleBtn.Size = UDim2.new(0, 50, 0, 24)
     ToggleBtn.Position = UDim2.new(1, -65, 0, yPos + 3)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     ToggleBtn.Text = "OFF"
     ToggleBtn.Font = Enum.Font.GothamBold
     ToggleBtn.TextSize = 11
@@ -1974,11 +1971,11 @@ local function CreateToggle(yPos, text, configKey)
         Config[configKey] = not Config[configKey]
         
         if Config[configKey] then
-            ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 140)
+            ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 255) -- Cyan Neon
             ToggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
             ToggleBtn.Text = "ON"
         else
-            ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+            ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
             ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
             ToggleBtn.Text = "OFF"
         end
@@ -1991,10 +1988,21 @@ CreateToggle(85, "Comprar Regular", "AutoRegular")
 CreateToggle(125, "Comprar Ultimate", "AutoUltimate")
 
 
---  MOTOR  AUTO PESCA 
+--  SISTEMA DE VISIBILIDAD
+task.spawn(function()
+    while task.wait(0.2) do
+        
+        if MainFrame.Visible ~= Config.AutoFarm then
+            MainFrame.Visible = Config.AutoFarm
+        end
+    end
+end)
+
+
+--  MOTOR AUTO PESCA 
 task.spawn(function()
     while task.wait(2.5) do
-        if Config.AutoFish then
+        if Config.AutoFish and Config.AutoFarm then -- Solo pesca si ambos están ON
             pcall(function()
                 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
                 Remotes:WaitForChild("FishingRE"):FireServer("StartFishing")
@@ -2005,27 +2013,29 @@ task.spawn(function()
     end
 end)
 
---AUTO COMPRA
+-- MOTOR AUTO COMPRA (Configurado a 20s)
 task.spawn(function()
-    while task.wait(30) do 
-        if Config.AutoRegular then
-            pcall(function()
-                
-                ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 10)
-                print("🛒 Comprados 10 WormtecRegular")
-            end)
-        end
-        
-        task.wait(1.5) 
-        
-        if Config.AutoUltimate then
-            pcall(function()
-                ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 10)
-                print("🛒 Comprados 10 WormtecUltimate")
-            end)
+    while task.wait(20) do  -- Cambiado a 20 segundos
+        if Config.AutoFarm then 
+            if Config.AutoRegular then
+                pcall(function()
+                    ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 10)
+                    print("🛒 Comprados 10 WormtecRegular")
+                end)
+            end
+            
+            task.wait(1.5) 
+            
+            if Config.AutoUltimate then
+                pcall(function()
+                    ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 10)
+                    print("🛒 Comprados 10 WormtecUltimate")
+                end)
+            end
         end
     end
 end)
+
 
 
 -- SNAP V3RSION 2
