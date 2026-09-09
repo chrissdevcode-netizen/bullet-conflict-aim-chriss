@@ -1463,10 +1463,25 @@ end)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui") -- Añadido para las notificaciones
 
 local LocalPlayer = Players.LocalPlayer
 
---  INTERFAZ DE PESCA (
+-- (Asegúrate de tener tu tabla Config si lo corres por separado)
+-- local Config = { AutoFarm = true, AutoFish = false, AutoRegular = false, AutoUltimate = false }
+
+-- 🔔 SISTEMA DE NOTIFICACIONES VIP 🔔
+local function Notificar(titulo, texto)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = titulo,
+            Text = texto,
+            Duration = 3, -- Desaparece en 3 segundos
+        })
+    end)
+end
+
+--  INTERFAZ DE PESCA
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
@@ -1476,7 +1491,7 @@ if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 240, 0, 175)
-MainFrame.Position = UDim2.new(0.5, -120, 0.2, 0
+MainFrame.Position = UDim2.new(0.5, -120, 0.2, 0) -- ✅ Te faltaba cerrar el paréntesis aquí
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -1537,15 +1552,17 @@ local function CreateToggle(yPos, text, configKey)
             ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 255) -- Cyan Neon
             ToggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
             ToggleBtn.Text = "ON"
+            Notificar("✅ " .. text, "¡Función activada con éxito! 🔥")
         else
             ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
             ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
             ToggleBtn.Text = "OFF"
+            Notificar("❌ " .. text, "Se ha apagado la función. 😴")
         end
     end)
 end
 
---   3 BOTONES
+-- 3 BOTONES
 CreateToggle(45, "Auto Pescar", "AutoFish")
 CreateToggle(85, "Comprar Regular", "AutoRegular")
 CreateToggle(125, "Comprar Ultimate", "AutoUltimate")
@@ -1554,7 +1571,6 @@ CreateToggle(125, "Comprar Ultimate", "AutoUltimate")
 --  SISTEMA DE VISIBILIDAD
 task.spawn(function()
     while task.wait(0.2) do
-        
         if MainFrame.Visible ~= Config.AutoFarm then
             MainFrame.Visible = Config.AutoFarm
         end
@@ -1583,7 +1599,7 @@ task.spawn(function()
             if Config.AutoRegular then
                 pcall(function()
                     ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 10)
-                    print("🛒 Comprados 10 WormtecRegular")
+                    Notificar("🛒 ¡Compra Realizada!", "Se han comprado 10 Cebos Regulares. 🪱")
                 end)
             end
             
@@ -1592,7 +1608,7 @@ task.spawn(function()
             if Config.AutoUltimate then
                 pcall(function()
                     ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 10)
-                    print("🛒 Comprados 10 WormtecUltimate")
+                    Notificar(" ¡Compra VIP!", "Se han comprado 10 Cebos Ultimate. )
                 end)
             end
         end
