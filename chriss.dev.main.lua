@@ -49,11 +49,10 @@ fovStroke.Color = Color3.fromRGB(255, 255, 255)
 
 -- VARIABLES Y CONFIGURACIONES
 
-local Config = {
-    -- Auto Fish & Shop
-    AutoFish = false,
-    AutoRegular = false,
-    AutoUltimate = false,
+Config = {
+    
+    
+
     
     -- Cheats & Combat 
     SpeedValue = 16,
@@ -959,16 +958,8 @@ AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 
--- TOGGLE MAESTRO (Controla el Menú Flotante de Pesca)
-AddToggle(TabMisc, "Auto Farm 🎣", "AutoFarm", Theme.Misc, function(Value)
-    Config.AutoFarm = Value
-    
-    -- Si tu librería no actualiza Config.AutoFarm automáticamente,
-    -- esta función callback asegura que el menú flotante se muestre/oculte.
-    if MainFrame then
-        MainFrame.Visible = Value
-    end
-end)
+-- TOGGLE MAESTRO 
+AddToggle(TabMisc, "Auto Farm 🎣", "AutoFarm", Theme.Misc)
 
 AddToggle(TabMisc, "Auto Skip", "AutoSkipBuy", Theme.Misc)
 
@@ -1457,8 +1448,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-
--- 🎣 AUTO FISH, SHOP & SELL
+-- 🎣 AUTO FISH, SHOP & SELL (UI VIP REDISEÑADA Y REPARADA)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1467,16 +1457,15 @@ local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ⚙️ CONFIGURACIÓN GLOBAL 
-getgenv().Config = getgenv().Config or {}
+-- ⚙️ CONFIGURACIÓN GLOBAL
+getgenv().Config = getgenv().Config or {
+    AutoFarm = true, 
+    AutoFish = false,
+    AutoRegular = false,
+    AutoUltimate = false,
+    AutoSell = false
+}
 local Config = getgenv().Config
-
--- Nos aseguramos de que existan las variables
-if Config.AutoFarm == nil then Config.AutoFarm = true end
-if Config.AutoFish == nil then Config.AutoFish = false end
-if Config.AutoRegular == nil then Config.AutoRegular = false end
-if Config.AutoUltimate == nil then Config.AutoUltimate = false end
-if Config.AutoSell == nil then Config.AutoSell = false end
 
 -- 🖼️ CREACIÓN DE LA INTERFAZ
 local ScreenGui = Instance.new("ScreenGui")
@@ -1630,10 +1619,10 @@ local function EjecutarVenta()
     end)
 end
 
--- Botón para vender a mano
+
 CreateButton(215, "💰 VENDER PECES AHORA", EjecutarVenta)
 
--- 👁️ SISTEMA DE VISIBILIDAD BLINDADO (Lee el getgenv directo)
+-- 👁️ SISTEMA DE VISIBILIDAD BLINDADO 
 task.spawn(function()
     while task.wait(0.1) do
         if getgenv().Config and getgenv().Config.AutoFarm ~= nil then
@@ -1677,7 +1666,7 @@ task.spawn(function()
     end
 end)
 
--- 💰 MOTOR AUTO VENDER (Cada 40 Segundos)
+-- 💰 MOTOR AUTO VENDER 
 task.spawn(function()
     while task.wait(40) do
         if Config.AutoSell and Config.AutoFarm then
