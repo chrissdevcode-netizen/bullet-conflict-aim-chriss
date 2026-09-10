@@ -83,10 +83,10 @@ Config = {
     
     -- Misc & Farming
     LockUI = false,
-    AutoFarm = false,        -- T
-    AutoSkipBuy = false      
+    AutoFarm = false,
+    AutoSkipBuy = false
 }
-
+getgenv().Config = Config 
 
 -- TEMAS
 local Theme = {
@@ -954,13 +954,13 @@ AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
 
--- Pestaña Misc
+
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 
--- TOGGLE MAESTRO 
+-- TOGGLES FARM ECT
+AddToggle(TabMisc, "Bloquear Menús 🔒", "LockUI", Theme.Misc)
 AddToggle(TabMisc, "Auto Farm 🎣", "AutoFarm", Theme.Misc)
-
 AddToggle(TabMisc, "Auto Skip", "AutoSkipBuy", Theme.Misc)
 
 -- LOGICA SERVER HOP
@@ -1448,23 +1448,17 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- 🎣 AUTO FISH, SHOP & SELL (UI VIP REDISEÑADA Y REPARADA)
+-- 🎣 AUTO FISH, SHOP & SELL 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService") 
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ⚙️ CONFIGURACIÓN GLOBAL
-getgenv().Config = getgenv().Config or {
-    AutoFarm = true, 
-    AutoFish = false,
-    AutoRegular = false,
-    AutoUltimate = false,
-    AutoSell = false
-}
+-- ⚙️ VÍNCULO A LA CONFIGURACIÓN GLOBAL
+getgenv().Config = getgenv().Config or {}
 local Config = getgenv().Config
 
 -- 🖼️ CREACIÓN DE LA INTERFAZ
@@ -1478,14 +1472,14 @@ if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 -- Fondo principal (Dark Night Glassmorphism)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 250, 0, 270) -- Lo hicimos más alto para que quepa todo
+MainFrame.Size = UDim2.new(0, 250, 0, 270)
 MainFrame.Position = UDim2.new(0.5, -125, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) 
-MainFrame.BackgroundTransparency = 0.15 
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+MainFrame.BackgroundTransparency = 0.15
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
-MainFrame.Draggable = true 
-MainFrame.Visible = Config.AutoFarm
+MainFrame.Draggable = not (Config.LockUI or false)
+MainFrame.Visible = Config.AutoFarm or false -- Inicia según el estado del toggle maestro
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -1526,7 +1520,7 @@ CloseBtn.BackgroundTransparency = 1
 CloseBtn.Parent = MainFrame
 
 CloseBtn.MouseButton1Click:Connect(function()
-    Config.AutoFarm = false -- Esto apagará todo y ocultará el menú
+    Config.AutoFarm = false -- Apaga la función y oculta el panel
 end)
 
 local Line = Instance.new("Frame")
@@ -1577,12 +1571,12 @@ local function CreateModernToggle(yPos, text, configKey)
     end)
 end
 
--- 🔘 FUNCIÓN CREADORA DE BOTONES NORMALES (Para Vender)
+--  FUNCIÓN CREADORA DE BOTONES
 local function CreateButton(yPos, text, callback)
     local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(0.88, 0, 0, 32)
     Btn.Position = UDim2.new(0.06, 0, 0, yPos)
-    Btn.BackgroundColor3 = Color3.fromRGB(160, 80, 255) -- Morado Neón
+    Btn.BackgroundColor3 = Color3.fromRGB(160, 80, 255)
     Btn.Text = text
     Btn.Font = Enum.Font.GothamBold
     Btn.TextSize = 13
@@ -1592,7 +1586,6 @@ local function CreateButton(yPos, text, callback)
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
     
     Btn.MouseButton1Click:Connect(function()
-        -- Efecto click
         TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(120, 50, 200)}):Play()
         task.wait(0.1)
         TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(160, 80, 255)}):Play()
@@ -1600,13 +1593,12 @@ local function CreateButton(yPos, text, callback)
     end)
 end
 
--- 📌 AGREGAMOS LOS ELEMENTOS A LA UI
+--  COMPONENTES(TOGLEES)XD
 CreateModernToggle(50, "Auto Pescar", "AutoFish")
 CreateModernToggle(90, "Comprar Regular", "AutoRegular")
 CreateModernToggle(130, "Comprar Ultimate", "AutoUltimate")
 CreateModernToggle(170, "Auto Vender (40s)", "AutoSell")
 
--- Lógica de Venta
 local function EjecutarVenta()
     pcall(function()
         local args = {
@@ -1615,64 +1607,24 @@ local function EjecutarVenta()
             Instance.new("Tool", nil)
         }
         ReplicatedStorage:WaitForChild("SellShopEvent"):FireServer(unpack(args))
-        print("💰 Se ha vendido todo con éxito!")
     end)
 end
 
-
 CreateButton(215, "💰 VENDER PECES AHORA", EjecutarVenta)
 
--- 👁️ SISTEMA DE VISIBILIDAD BLINDADO 
+--  MONITOR DE ESTADO Y BLOQUEO DE INTERFAZ
 task.spawn(function()
     while task.wait(0.1) do
-        if getgenv().Config and getgenv().Config.AutoFarm ~= nil then
-            if MainFrame.Visible ~= getgenv().Config.AutoFarm then
-                MainFrame.Visible = getgenv().Config.AutoFarm
+        if getgenv().Config then
+            -- Sincronizar Visibilidad
+            if MainFrame.Visible ~= (getgenv().Config.AutoFarm or false) then
+                MainFrame.Visible = getgenv().Config.AutoFarm or false
+            end
+            -- Sincronizar Bloqueo de Movimiento
+            local shouldLock = getgenv().Config.LockUI or false
+            if MainFrame.Draggable == shouldLock then
+                MainFrame.Draggable = not shouldLock
             end
         end
     end
 end)
-
--- 🤖 MOTOR AUTO PESCA 
-task.spawn(function()
-    while task.wait(2.5) do
-        if Config.AutoFish and Config.AutoFarm then
-            pcall(function()
-                local Remotes = ReplicatedStorage:WaitForChild("Remotes")
-                Remotes:WaitForChild("FishingRE"):FireServer("StartFishing")
-                task.wait(1) 
-                Remotes:WaitForChild("QTERE"):FireServer("Success")
-            end)
-        end
-    end
-end)
-
--- 🛒 MOTOR AUTO COMPRA 
-task.spawn(function()
-    while task.wait(20) do 
-        if Config.AutoFarm then 
-            if Config.AutoRegular then
-                pcall(function()
-                    ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 10)
-                end)
-            end
-            task.wait(1.5) 
-            if Config.AutoUltimate then
-                pcall(function()
-                    ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 10)
-                end)
-            end
-        end
-    end
-end)
-
--- 💰 MOTOR AUTO VENDER 
-task.spawn(function()
-    while task.wait(40) do
-        if Config.AutoSell and Config.AutoFarm then
-            EjecutarVenta()
-        end
-    end
-end)
-
-    
