@@ -1451,6 +1451,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+
 -- 🎣 AUTO FISH, SHOP & SELL 
 
 local Players = game:GetService("Players")
@@ -1482,7 +1483,7 @@ MainFrame.BackgroundTransparency = 0.15
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = not (Config.LockUI or false)
-MainFrame.Visible = Config.AutoFarm or false -- Inicia según el estado del toggle maestro
+MainFrame.Visible = Config.AutoFarm or false
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -1523,7 +1524,7 @@ CloseBtn.BackgroundTransparency = 1
 CloseBtn.Parent = MainFrame
 
 CloseBtn.MouseButton1Click:Connect(function()
-    Config.AutoFarm = false -- Apaga la función y oculta el panel
+    Config.AutoFarm = false
 end)
 
 local Line = Instance.new("Frame")
@@ -1596,7 +1597,7 @@ local function CreateButton(yPos, text, callback)
     end)
 end
 
---  COMPONENTES(TOGLEES)XD
+--  COMPONENTES
 CreateModernToggle(50, "Auto Pescar", "AutoFish")
 CreateModernToggle(90, "Comprar Regular", "AutoRegular")
 CreateModernToggle(130, "Comprar Ultimate", "AutoUltimate")
@@ -1604,26 +1605,60 @@ CreateModernToggle(170, "Auto Vender (40s)", "AutoSell")
 
 local function EjecutarVenta()
     pcall(function()
-        local args = {
-            "SELL_ITEM",
-            "tool",
-            Instance.new("Tool", nil)
-        }
-        ReplicatedStorage:WaitForChild("SellShopEvent"):FireServer(unpack(args))
+        local remotes = ReplicatedStorage:FindFirstChild("Remotes") or ReplicatedStorage
+        local sellRemote = remotes:FindFirstChild("SellShopEvent")
+        if sellRemote then
+            sellRemote:FireServer("SELL_ITEM", "tool", Instance.new("Tool"))
+        end
     end)
 end
 
 CreateButton(215, "💰 VENDER PECES AHORA", EjecutarVenta)
 
---  MONITOR DE ESTADO Y BLOQUEO DE INTERFAZ
+-- 🔄 LÓGICA DE AUTOMATIZACIÓN DE PESCA
+task.spawn(function()
+    local remotes = ReplicatedStorage:WaitForChild("Remotes", 5) or ReplicatedStorage
+    local fishingRE = remotes:WaitForChild("FishingRE", 5)
+    local qteRE = remotes:WaitForChild("QTERE", 5)
+
+    while task.wait(0.5) do
+        if Config.AutoFarm and Config.AutoFish then
+            pcall(function()
+                if fishingRE then
+                    fishingRE:FireServer("StartFishing")
+                end
+                task.wait(0.8) -- Tiempo de espera previo al inicio del minijuego
+                if qteRE then
+                    qteRE:FireServer("Success")
+                end
+            end)
+        end
+    end
+end)
+
+-- ⏱️ LÓGICA DE AUTO VENTA TEMPORIZADA 
+task.spawn(function()
+    local timer = 0
+    while task.wait(1) do
+        if Config.AutoFarm and Config.AutoSell then
+            timer = timer + 1
+            if timer >= 40 then
+                EjecutarVenta()
+                timer = 0
+            end
+        else
+            timer = 0
+        end
+    end
+end)
+
+-- 🔒 MONITOR DE ESTADO Y BLOQUEO DE INTERFAZ
 task.spawn(function()
     while task.wait(0.1) do
         if getgenv().Config then
-            -- Sincronizar Visibilidad
             if MainFrame.Visible ~= (getgenv().Config.AutoFarm or false) then
                 MainFrame.Visible = getgenv().Config.AutoFarm or false
             end
-            -- Sincronizar Bloqueo de Movimiento
             local shouldLock = getgenv().Config.LockUI or false
             if MainFrame.Draggable == shouldLock then
                 MainFrame.Draggable = not shouldLock
