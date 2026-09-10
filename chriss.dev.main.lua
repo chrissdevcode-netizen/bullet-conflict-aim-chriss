@@ -50,11 +50,8 @@ fovStroke.Color = Color3.fromRGB(255, 255, 255)
 -- VARIABLES Y CONFIGURACIONES
 
 Config = {
-    
-    
 
-    
-    -- Cheats & Combat 
+    -- Cheats & Combat
     SpeedValue = 16,
     SnapLines = false,  
     SpeedEnabled = false, 
@@ -70,7 +67,8 @@ Config = {
     WallCheck = true,
     TargetPart = "HumanoidRootPart",
     AntiKill = false,
-    
+    AntiAim = false,            
+
     -- Visuals
     Fullbright = false,
     ESPBox = false, 
@@ -80,11 +78,14 @@ Config = {
     Traces = false,
     ESPGun = false, 
     ESPGunDist = false,
-    
+    ESPSkeleton = false,         
+
     -- Misc & Farming
     LockUI = false,
     AutoFarm = false,
-    AutoSkipBuy = false
+    AutoSkipBuy = false,
+    InfiniteStamina = false      
+    
 }
 getgenv().Config = Config 
 
@@ -851,7 +852,7 @@ NewsBody.TextYAlignment = Enum.TextYAlignment.Top
 NewsBody.BackgroundTransparency = 1
 NewsBody.Parent = NewsCard
 
--- FUNCIONES CHEATS
+-- CHEATS & COMBAT
 AddToggle(TabCheats, "Speed Hack", "SpeedEnabled", Theme.Main)
 AddSlider(TabCheats, "Speed Power", 16, 300, 16, "SpeedValue", Theme.Main)
 AddToggle(TabCheats, "Infinity Jump", "InfJump", Theme.Main)
@@ -860,11 +861,13 @@ AddToggle(TabCheats, "Fly (Vuelo)", "Fly", Theme.Main)
 AddToggle(TabCheats, "Hide Name 👤", "HideName", Theme.Main)
 AddToggle(TabCheats, "Spin Bot 🌀", "SpinBot", Theme.Main)
 AddSlider(TabCheats, "Spin Speed", 10, 150, 30, "SpinSpeed", Theme.Main)
+AddToggle(TabCheats, "Anti-Aim", "AntiAim", Theme.Main)
 
 AddToggle(TabCombat, "Aimbot", "AimbotEnabled", Theme.Combat)
 AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
 AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
+AddToggle(TabCombat, "Anti-Kill", "AntiKill", Theme.Combat)
 
 
 -- LOGICA WALL CHECK
@@ -944,8 +947,8 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
--- VISUALS Y MISC TABS
-AddToggle(TabVisuals, "Fullbright ", "Fullbright", Theme.Visuals)
+-- VISUALS
+AddToggle(TabVisuals, "Fullbright 💡", "Fullbright", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Name", "ESPName", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Distancia", "ESPDist", Theme.Visuals)
@@ -953,16 +956,16 @@ AddToggle(TabVisuals, "ESP Health", "ESPHealth", Theme.Visuals)
 AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals)
+AddToggle(TabVisuals, "ESP Skeleton 💀", "ESPSkeleton", Theme.Visuals)
 
-
+-- MISC & FARMING
 local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
 local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 
--- TOGGLES FARM ECT
-AddToggle(TabMisc, "Bloquear Menús 🔒", "LockUI", Theme.Misc)
-AddToggle(TabMisc, "Auto Farm 🎣", "AutoFarm", Theme.Misc)
+AddToggle(TabMisc, "Infinite Stamina ", "InfiniteStamina", Theme.Misc)
+AddToggle(TabMisc, "Bloquear Menús ", "LockUI", Theme.Misc)
+AddToggle(TabMisc, "Auto Farm ", "AutoFarm", Theme.Misc)
 AddToggle(TabMisc, "Auto Skip", "AutoSkipBuy", Theme.Misc)
-
 -- LOGICA SERVER HOP
 BtnServerHop.MouseButton1Click:Connect(function()
     BtnServerHop.Text = "Buscando servidor... 🔍"
