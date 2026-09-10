@@ -1458,41 +1458,34 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
--- 🎣 AUTO FISH & SHOP 
+-- 🎣 AUTO FISH & SHOP (UI) REDISEÑADA 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
-local StarterGui = game:GetService("StarterGui") -- Añadido para las notificaciones
+local TweenService = game:GetService("TweenService") -- Añadido para animaciones suaves
 
 local LocalPlayer = Players.LocalPlayer
 
--- (Asegúrate de tener tu tabla Config si lo corres por separado)
--- local Config = { AutoFarm = true, AutoFish = false, AutoRegular = false, AutoUltimate = false }
+-- (Fallback 
+getgenv().Config = getgenv().Config or { AutoFarm = true, AutoFish = false, AutoRegular = false, AutoUltimate = false }
+local Config = getgenv().Config
 
--- 🔔 SISTEMA DE NOTIFICACIONES VIP 🔔
-local function Notificar(titulo, texto)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = titulo,
-            Text = texto,
-            Duration = 3, -- Desaparece en 3 segundos
-        })
-    end)
-end
-
---  INTERFAZ DE PESCA
+--  CREACIÓN DE LA INTERFAZ
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
 
 local success = pcall(function() ScreenGui.Parent = CoreGui end)
 if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
+-- Fondo principal 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 240, 0, 175)
-MainFrame.Position = UDim2.new(0.5, -120, 0.2, 0) -- ✅ Te faltaba cerrar el paréntesis aquí
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Size = UDim2.new(0, 250, 0, 190)
+MainFrame.Position = UDim2.new(0.5, -125, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) -- Fondo súper oscuro
+MainFrame.BackgroundTransparency = 0.15 -- Toque de cristal
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true 
@@ -1500,16 +1493,23 @@ MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
+-- Borde con degradado 
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255) 
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 255)),   -- Cyan Neon
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 80, 255))   -- Morado
+}
+UIGradient.Parent = UIStroke
+
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, 0, 0, 35)
 Title.Position = UDim2.new(0, 0, 0, 5)
 Title.Text = "🎣 FARM & SHOP 🛒"
 Title.Font = Enum.Font.GothamBold
@@ -1518,70 +1518,91 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
 
--- Función creadora de botones
-local function CreateToggle(yPos, text, configKey)
+-- Separador debajo del título
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(0.9, 0, 0, 1)
+Line.Position = UDim2.new(0.05, 0, 0, 38)
+Line.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+Line.BorderSizePixel = 0
+Line.Parent = MainFrame
+
+-- 🎚️ FUNCIÓN CREADORA DE INTERRUPTORES MODERNOS (SWITCHES)
+local function CreateModernToggle(yPos, text, configKey)
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(0.6, 0, 0, 30)
     Label.Position = UDim2.new(0, 15, 0, yPos)
     Label.Text = text
     Label.Font = Enum.Font.GothamBold
     Label.TextSize = 12
-    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Label.TextColor3 = Color3.fromRGB(220, 220, 220)
     Label.TextXAlignment = Enum.TextXAlignment.Left
     Label.BackgroundTransparency = 1
     Label.Parent = MainFrame
     
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Size = UDim2.new(0, 50, 0, 24)
-    ToggleBtn.Position = UDim2.new(1, -65, 0, yPos + 3)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    ToggleBtn.Text = "OFF"
-    ToggleBtn.Font = Enum.Font.GothamBold
-    ToggleBtn.TextSize = 11
-    ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    ToggleBtn.Parent = MainFrame
+    -- Fondo del interruptor
+    local SwitchBg = Instance.new("TextButton")
+    SwitchBg.Size = UDim2.new(0, 42, 0, 22)
+    SwitchBg.Position = UDim2.new(1, -60, 0, yPos + 4)
+    SwitchBg.BackgroundColor3 = Config[configKey] and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(40, 40, 50)
+    SwitchBg.Text = ""
+    SwitchBg.AutoButtonColor = false
+    SwitchBg.Parent = MainFrame
 
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(1, 0)
-    BtnCorner.Parent = ToggleBtn
+    local BgCorner = Instance.new("UICorner")
+    BgCorner.CornerRadius = UDim.new(1, 0)
+    BgCorner.Parent = SwitchBg
 
-    ToggleBtn.MouseButton1Click:Connect(function()
+    -- Círculo deslizante
+    local Knob = Instance.new("Frame")
+    Knob.Size = UDim2.new(0, 16, 0, 16)
+    Knob.Position = Config[configKey] and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+    Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Knob.BorderSizePixel = 0
+    Knob.Parent = SwitchBg
+
+    local KnobCorner = Instance.new("UICorner")
+    KnobCorner.CornerRadius = UDim.new(1, 0)
+    KnobCorner.Parent = Knob
+
+    -- Lógica y Animación al hacer clic
+    SwitchBg.MouseButton1Click:Connect(function()
         Config[configKey] = not Config[configKey]
+        local isToggled = Config[configKey]
         
-        if Config[configKey] then
-            ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 255) -- Cyan Neon
-            ToggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-            ToggleBtn.Text = "ON"
-            Notificar("✅ " .. text, "¡Función activada con éxito! 🔥")
-        else
-            ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-            ToggleBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-            ToggleBtn.Text = "OFF"
-            Notificar("❌ " .. text, "Se ha apagado la función. 😴")
-        end
+        -- Animación de color
+        TweenService:Create(SwitchBg, TweenInfo.new(0.3), {
+            BackgroundColor3 = isToggled and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(40, 40, 50)
+        }):Play()
+        
+        -- Animación de movimiento del círculo
+        TweenService:Create(Knob, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = isToggled and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+        }):Play()
     end)
 end
 
--- 3 BOTONES
-CreateToggle(45, "Auto Pescar", "AutoFish")
-CreateToggle(85, "Comprar Regular", "AutoRegular")
-CreateToggle(125, "Comprar Ultimate", "AutoUltimate")
+-- 3 BOTONES REDISEÑADOS
+CreateModernToggle(55, "Auto Pescar", "AutoFish")
+CreateModernToggle(95, "Comprar Regular", "AutoRegular")
+CreateModernToggle(135, "Comprar Ultimate", "AutoUltimate")
 
-
---  SISTEMA DE VISIBILIDAD
+-- 👁️ SISTEMA DE VISIBILIDAD 
 task.spawn(function()
-    while task.wait(0.2) do
-        if MainFrame.Visible ~= Config.AutoFarm then
-            MainFrame.Visible = Config.AutoFarm
-        end
+    while task.wait(0.1) do
+        pcall(function()
+            if Config and Config.AutoFarm ~= nil then
+                if MainFrame.Visible ~= Config.AutoFarm then
+                    MainFrame.Visible = Config.AutoFarm
+                end
+            end
+        end)
     end
 end)
 
-
---  MOTOR AUTO PESCA 
+-- 🤖 MOTOR AUTO PESCA 
 task.spawn(function()
     while task.wait(2.5) do
-        if Config.AutoFish and Config.AutoFarm then -- Solo pesca si ambos están ON
+        if Config and Config.AutoFish and Config.AutoFarm then
             pcall(function()
                 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
                 Remotes:WaitForChild("FishingRE"):FireServer("StartFishing")
@@ -1592,14 +1613,14 @@ task.spawn(function()
     end
 end)
 
--- MOTOR AUTO COMPRA 
+-- 🛒 MOTOR AUTO COMPRA 
 task.spawn(function()
     while task.wait(20) do 
-        if Config.AutoFarm then 
+        if Config and Config.AutoFarm then 
             if Config.AutoRegular then
                 pcall(function()
                     ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 10)
-                    Notificar("🛒 ¡Compra Realizada!", "Se han comprado 10 Cebos Regulares. 🪱")
+                    print("🛒 Comprados 10 WormtecRegular")
                 end)
             end
             
@@ -1608,7 +1629,7 @@ task.spawn(function()
             if Config.AutoUltimate then
                 pcall(function()
                     ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 10)
-                    Notificar(" ¡Compra VIP!", "Se han comprado 10 Cebos Ultimate. )
+                    print("🛒 Comprados 10 WormtecUltimate")
                 end)
             end
         end
