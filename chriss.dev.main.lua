@@ -1458,20 +1458,27 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
--- 🎣 AUTO FISH & SHOP (UI) REDISEÑADA 
+-- 🎣 AUTO FISH, SHOP & SELL
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService") -- Añadido para animaciones suaves
+local TweenService = game:GetService("TweenService") 
 
 local LocalPlayer = Players.LocalPlayer
 
--- (Fallback 
-getgenv().Config = getgenv().Config or { AutoFarm = true, AutoFish = false, AutoRegular = false, AutoUltimate = false }
+-- ⚙️ CONFIGURACIÓN GLOBAL 
+getgenv().Config = getgenv().Config or {}
 local Config = getgenv().Config
 
---  CREACIÓN DE LA INTERFAZ
+-- Nos aseguramos de que existan las variables
+if Config.AutoFarm == nil then Config.AutoFarm = true end
+if Config.AutoFish == nil then Config.AutoFish = false end
+if Config.AutoRegular == nil then Config.AutoRegular = false end
+if Config.AutoUltimate == nil then Config.AutoUltimate = false end
+if Config.AutoSell == nil then Config.AutoSell = false end
+
+-- 🖼️ CREACIÓN DE LA INTERFAZ
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
@@ -1480,23 +1487,23 @@ ScreenGui.IgnoreGuiInset = true
 local success = pcall(function() ScreenGui.Parent = CoreGui end)
 if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Fondo principal 
+-- Fondo principal (Dark Night Glassmorphism)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 250, 0, 190)
+MainFrame.Size = UDim2.new(0, 250, 0, 270) -- Lo hicimos más alto para que quepa todo
 MainFrame.Position = UDim2.new(0.5, -125, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) -- Fondo súper oscuro
-MainFrame.BackgroundTransparency = 0.15 -- Toque de cristal
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) 
+MainFrame.BackgroundTransparency = 0.15 
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true 
-MainFrame.Visible = false
+MainFrame.Visible = Config.AutoFarm
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
--- Borde con degradado 
+-- Borde neón
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
@@ -1511,14 +1518,28 @@ UIGradient.Parent = UIStroke
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.Position = UDim2.new(0, 0, 0, 5)
-Title.Text = "🎣 FARM & SHOP 🛒"
+Title.Text = "🎣 FARM & SELL 🛒"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
 
--- Separador debajo del título
+-- Botón manual para cerrar (X)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 7)
+CloseBtn.Text = "×"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 22
+CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Parent = MainFrame
+
+CloseBtn.MouseButton1Click:Connect(function()
+    Config.AutoFarm = false -- Esto apagará todo y ocultará el menú
+end)
+
 local Line = Instance.new("Frame")
 Line.Size = UDim2.new(0.9, 0, 0, 1)
 Line.Position = UDim2.new(0.05, 0, 0, 38)
@@ -1526,7 +1547,7 @@ Line.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 Line.BorderSizePixel = 0
 Line.Parent = MainFrame
 
--- 🎚️ FUNCIÓN CREADORA DE INTERRUPTORES MODERNOS (SWITCHES)
+-- 🎚️ FUNCIÓN CREADORA DE INTERRUPTORES
 local function CreateModernToggle(yPos, text, configKey)
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(0.6, 0, 0, 30)
@@ -1539,7 +1560,6 @@ local function CreateModernToggle(yPos, text, configKey)
     Label.BackgroundTransparency = 1
     Label.Parent = MainFrame
     
-    -- Fondo del interruptor
     local SwitchBg = Instance.new("TextButton")
     SwitchBg.Size = UDim2.new(0, 42, 0, 22)
     SwitchBg.Position = UDim2.new(1, -60, 0, yPos + 4)
@@ -1548,11 +1568,8 @@ local function CreateModernToggle(yPos, text, configKey)
     SwitchBg.AutoButtonColor = false
     SwitchBg.Parent = MainFrame
 
-    local BgCorner = Instance.new("UICorner")
-    BgCorner.CornerRadius = UDim.new(1, 0)
-    BgCorner.Parent = SwitchBg
+    Instance.new("UICorner", SwitchBg).CornerRadius = UDim.new(1, 0)
 
-    -- Círculo deslizante
     local Knob = Instance.new("Frame")
     Knob.Size = UDim2.new(0, 16, 0, 16)
     Knob.Position = Config[configKey] and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
@@ -1560,49 +1577,77 @@ local function CreateModernToggle(yPos, text, configKey)
     Knob.BorderSizePixel = 0
     Knob.Parent = SwitchBg
 
-    local KnobCorner = Instance.new("UICorner")
-    KnobCorner.CornerRadius = UDim.new(1, 0)
-    KnobCorner.Parent = Knob
+    Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
 
-    -- Lógica y Animación al hacer clic
     SwitchBg.MouseButton1Click:Connect(function()
         Config[configKey] = not Config[configKey]
         local isToggled = Config[configKey]
         
-        -- Animación de color
-        TweenService:Create(SwitchBg, TweenInfo.new(0.3), {
-            BackgroundColor3 = isToggled and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(40, 40, 50)
-        }):Play()
-        
-        -- Animación de movimiento del círculo
-        TweenService:Create(Knob, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Position = isToggled and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-        }):Play()
+        TweenService:Create(SwitchBg, TweenInfo.new(0.3), {BackgroundColor3 = isToggled and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(40, 40, 50)}):Play()
+        TweenService:Create(Knob, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = isToggled and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)}):Play()
     end)
 end
 
--- 3 BOTONES REDISEÑADOS
-CreateModernToggle(55, "Auto Pescar", "AutoFish")
-CreateModernToggle(95, "Comprar Regular", "AutoRegular")
-CreateModernToggle(135, "Comprar Ultimate", "AutoUltimate")
+-- 🔘 FUNCIÓN CREADORA DE BOTONES NORMALES (Para Vender)
+local function CreateButton(yPos, text, callback)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(0.88, 0, 0, 32)
+    Btn.Position = UDim2.new(0.06, 0, 0, yPos)
+    Btn.BackgroundColor3 = Color3.fromRGB(160, 80, 255) -- Morado Neón
+    Btn.Text = text
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 13
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Parent = MainFrame
 
--- 👁️ SISTEMA DE VISIBILIDAD 
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    
+    Btn.MouseButton1Click:Connect(function()
+        -- Efecto click
+        TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(120, 50, 200)}):Play()
+        task.wait(0.1)
+        TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(160, 80, 255)}):Play()
+        callback()
+    end)
+end
+
+-- 📌 AGREGAMOS LOS ELEMENTOS A LA UI
+CreateModernToggle(50, "Auto Pescar", "AutoFish")
+CreateModernToggle(90, "Comprar Regular", "AutoRegular")
+CreateModernToggle(130, "Comprar Ultimate", "AutoUltimate")
+CreateModernToggle(170, "Auto Vender (40s)", "AutoSell")
+
+-- Lógica de Venta
+local function EjecutarVenta()
+    pcall(function()
+        local args = {
+            "SELL_ITEM",
+            "tool",
+            Instance.new("Tool", nil)
+        }
+        ReplicatedStorage:WaitForChild("SellShopEvent"):FireServer(unpack(args))
+        print("💰 Se ha vendido todo con éxito!")
+    end)
+end
+
+-- Botón para vender a mano
+CreateButton(215, "💰 VENDER PECES AHORA", EjecutarVenta)
+
+-- 👁️ SISTEMA DE VISIBILIDAD BLINDADO (Lee el getgenv directo)
 task.spawn(function()
     while task.wait(0.1) do
-        pcall(function()
-            if Config and Config.AutoFarm ~= nil then
-                if MainFrame.Visible ~= Config.AutoFarm then
-                    MainFrame.Visible = Config.AutoFarm
-                end
+        if getgenv().Config and getgenv().Config.AutoFarm ~= nil then
+            if MainFrame.Visible ~= getgenv().Config.AutoFarm then
+                MainFrame.Visible = getgenv().Config.AutoFarm
             end
-        end)
+        end
     end
 end)
 
 -- 🤖 MOTOR AUTO PESCA 
 task.spawn(function()
     while task.wait(2.5) do
-        if Config and Config.AutoFish and Config.AutoFarm then
+        if Config.AutoFish and Config.AutoFarm then
             pcall(function()
                 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
                 Remotes:WaitForChild("FishingRE"):FireServer("StartFishing")
@@ -1616,22 +1661,31 @@ end)
 -- 🛒 MOTOR AUTO COMPRA 
 task.spawn(function()
     while task.wait(20) do 
-        if Config and Config.AutoFarm then 
+        if Config.AutoFarm then 
             if Config.AutoRegular then
                 pcall(function()
                     ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 10)
-                    print("🛒 Comprados 10 WormtecRegular")
                 end)
             end
-            
             task.wait(1.5) 
-            
             if Config.AutoUltimate then
                 pcall(function()
                     ReplicatedStorage:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 10)
-                    print("🛒 Comprados 10 WormtecUltimate")
                 end)
             end
+        end
+    end
+end)
+
+-- 💰 MOTOR AUTO VENDER (Cada 40 Segundos)
+task.spawn(function()
+    while task.wait(40) do
+        if Config.AutoSell and Config.AutoFarm then
+            EjecutarVenta()
+        end
+    end
+end)
+
         end
     end
 end)
