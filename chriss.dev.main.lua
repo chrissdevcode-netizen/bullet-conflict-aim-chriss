@@ -1452,6 +1452,57 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
+--   Anti-Kill 
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local RunService = Service or game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local originalPos = nil
+    local isUnderground = false
+
+    RunService.Heartbeat:Connect(function()
+        -- Si el toggle está apagado, reseteamos el estado
+        if not Config.AntiKill then 
+            isUnderground = false
+            originalPos = nil
+            return 
+        end
+
+        local character = LocalPlayer.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChild("Humanoid") then return end
+        
+        local hrp = character.HumanoidRootPart
+        local humanoid = character.Humanoid
+        local health = humanoid.Health
+
+        -- Disparador: cuando la vida baja a 20 o menos
+        if health <= 20 and health > 0 and not isUnderground then
+            originalPos = hrp.Position -- Guardamos de dónde venimos
+            isUnderground = true
+        end
+
+        if isUnderground then
+            if health >= 32 then
+                -- Condición de salida: si sube a 32 de vida, regresamos arriba
+                if originalPos then
+                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, 3, 0))
+                end
+                isUnderground = false
+                originalPos = nil
+            else
+                -- Efecto: -13 studs abajo de la posición original con vibración aleatoria ("moverse como loco")
+                local randomJitter = Vector3.new(math.random(-4, 4), math.random(-2, 2), math.random(-4, 4))
+                if originalPos then
+                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, -13, 0) + randomJitter)
+                end
+            end
+        end
+    end)
+end)
+
+
+
 -- 🎣 AUTO FISH, SHOP & SELL 
 
 local Players = game:GetService("Players")
