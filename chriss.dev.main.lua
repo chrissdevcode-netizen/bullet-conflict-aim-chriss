@@ -1461,11 +1461,11 @@ local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ⚙️ VÍNCULO A LA CONFIGURACIÓN GLOBAL
+-- ⚙️Ñ VÍNCULO A LA CONFIGURACIÓN GLOBAL
 getgenv().Config = getgenv().Config or {}
 local Config = getgenv().Config
 
--- 🖼️ CREACIÓN DE LA INTERFAZ
+--  CREACIÓN DE LA INTERFAZ
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
@@ -1575,7 +1575,7 @@ local function CreateModernToggle(yPos, text, configKey)
     end)
 end
 
---  FUNCIÓN CREADORA DE BOTONES
+-- 🔘 FUNCIÓN CREADORA DE BOTONES
 local function CreateButton(yPos, text, callback)
     local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(0.88, 0, 0, 32)
@@ -1615,7 +1615,7 @@ end
 
 CreateButton(215, "💰 VENDER PECES AHORA", EjecutarVenta)
 
--- 🔄 LÓGICA DE AUTOMATIZACIÓN DE PESCA
+--  LÓGICA DE AUTOMATIZACIÓN DE PESCA
 task.spawn(function()
     local remotes = ReplicatedStorage:WaitForChild("Remotes", 5) or ReplicatedStorage
     local fishingRE = remotes:WaitForChild("FishingRE", 5)
@@ -1627,7 +1627,7 @@ task.spawn(function()
                 if fishingRE then
                     fishingRE:FireServer("StartFishing")
                 end
-                task.wait(0.8) -- Tiempo de espera previo al inicio del minijuego
+                task.wait(0.8)
                 if qteRE then
                     qteRE:FireServer("Success")
                 end
@@ -1636,23 +1636,50 @@ task.spawn(function()
     end
 end)
 
--- ⏱️ LÓGICA DE AUTO VENTA TEMPORIZADA 
+--  LÓGICA DE AUTO COMPRA TEMPORIZADA (CADA 12 SEGUNDOS)
 task.spawn(function()
-    local timer = 0
+    local mopShopEvent = ReplicatedStorage:WaitForChild("MopShopEvent", 5)
+    local buyTimer = 0
+    
     while task.wait(1) do
-        if Config.AutoFarm and Config.AutoSell then
-            timer = timer + 1
-            if timer >= 40 then
-                EjecutarVenta()
-                timer = 0
+        if Config.AutoFarm and (Config.AutoRegular or Config.AutoUltimate) then
+            buyTimer = buyTimer + 1
+            if buyTimer >= 12 then
+                pcall(function()
+                    if mopShopEvent then
+                        if Config.AutoUltimate then
+                            mopShopEvent:FireServer("BUY", "WormtecUltimate", 10)
+                        end
+                        if Config.AutoRegular then
+                            mopShopEvent:FireServer("BUY", "WormtecRegular", 10)
+                        end
+                    end
+                end)
+                buyTimer = 0 -- Reinicia el contador tras comprar
             end
         else
-            timer = 0
+            buyTimer = 0 -- Reinicia el contador si se apagan los interruptores
         end
     end
 end)
 
--- 🔒 MONITOR DE ESTADO Y BLOQUEO DE INTERFAZ
+--  LÓGICA DE AUTO VENTA TEMPORIZADA
+task.spawn(function()
+    local sellTimer = 0
+    while task.wait(1) do
+        if Config.AutoFarm and Config.AutoSell then
+            sellTimer = sellTimer + 1
+            if sellTimer >= 40 then
+                EjecutarVenta()
+                sellTimer = 0
+            end
+        else
+            sellTimer = 0
+        end
+    end
+end)
+
+-- MONITOR DE ESTADO Y BLOQUEO DE INTERFAZ
 task.spawn(function()
     while task.wait(0.1) do
         if getgenv().Config then
