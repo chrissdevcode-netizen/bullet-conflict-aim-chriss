@@ -1548,6 +1548,52 @@ task.spawn(function()
     end)
 end)
 
+-- ANTI-AIM
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+
+    local lastPos = nil
+
+    RunService.RenderStepped:Connect(function()
+        if not Config.AntiAim then 
+            lastPos = nil
+            return 
+        end
+
+        local character = LocalPlayer.Character
+        if not character then return end
+
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not hrp or not humanoid or humanoid.Health <= 0 then return end
+
+        -- Guardar posición real aproximadamente
+        if not lastPos then
+            lastPos = hrp.Position
+        end
+
+        -- Movimiento errático en todas direcciones
+        local offset = Vector3.new(
+            math.random(-6, 6) * 0.4,   -- izquierda / derecha
+            math.random(-4, 5) * 0.35,  -- arriba / abajo
+            math.random(-6, 6) * 0.4    -- adelante / atrás
+        )
+
+        -- Aplicar jitter
+        hrp.CFrame = CFrame.new(lastPos + offset) * CFrame.Angles(
+            math.rad(math.random(-15, 15)),
+            math.rad(math.random(-25, 25)),
+            math.rad(math.random(-15, 15))
+        )
+
+        -- Actualizar lastPos suavemente para que no se vaya volando
+        lastPos = lastPos:Lerp(hrp.Position, 0.15)
+    end)
+end)
+
+
 
 -- 🎣 AUTO FISH, SHOP & SELL 
 
