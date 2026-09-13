@@ -1548,13 +1548,16 @@ task.spawn(function()
     end)
 end)
 
--- ==================== ANTI-AIM (CON MOVIMIENTO) ====================
+-- ANTI-AIM (MOVIMIENTO CADA 1.5s)
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
 
-    RunService.RenderStepped:Connect(function()
+    local lastTeleport = 0
+    local interval = 1.5 -- segundos entre cada movimiento
+
+    RunService.Heartbeat:Connect(function()
         if not Config.AntiAim then return end
 
         local character = LocalPlayer.Character
@@ -1564,21 +1567,21 @@ task.spawn(function()
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if not hrp or not humanoid or humanoid.Health <= 0 then return end
 
-        -- Solo agregamos jitter encima de tu movimiento actual
+        local now = tick()
+        if now - lastTeleport < interval then return end
+        lastTeleport = now
+
+        -- moviento alejado en todas direcciones
         local offset = Vector3.new(
-            math.random(-5, 5) * 0.35,
-            math.random(-3, 4) * 0.3,
-            math.random(-5, 5) * 0.35
+            math.random(-12, 12),
+            math.random(-2, 6),
+            math.random(-12, 12)
         )
 
-        -- Aplicar offset + un poco de rotación
-        hrp.CFrame = hrp.CFrame * CFrame.new(offset) * CFrame.Angles(
-            math.rad(math.random(-12, 12)),
-            math.rad(math.random(-18, 18)),
-            math.rad(math.random(-12, 12))
-        )
+        hrp.CFrame = hrp.CFrame + offset
     end)
 end)
+ 
 
 
 
