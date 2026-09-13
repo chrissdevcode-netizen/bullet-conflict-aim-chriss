@@ -1453,49 +1453,94 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
---   Anti-Kill 
+-- ANTI-KILL
 task.spawn(function()
     local Players = game:GetService("Players")
-    local RunService = Service or game:GetService("RunService")
+    local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
-    
+
     local originalPos = nil
     local isUnderground = false
+    local noclipConnection = nil
+
+    -- Función de Noclip
+    local function EnableNoclip(character)
+        if noclipConnection then noclipConnection:Disconnect() end
+        
+        noclipConnection = RunService.Stepped:Connect(function()
+            if not character then return end
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+    end
+
+    local function DisableNoclip()
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+    end
 
     RunService.Heartbeat:Connect(function()
-        -- Si el toggle está apagado, reseteamos el estado
-        if not Config.AntiKill then 
-            isUnderground = false
-            originalPos = nil
-            return 
+        -- Si el toggle está apagado
+        if not Config.AntiKill then
+            if isUnderground then
+                isUnderground = false
+                originalPos = nil
+                DisableNoclip()
+            end
+            return
         end
 
         local character = LocalPlayer.Character
-        if not character or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChild("Humanoid") then return end
-        
-        local hrp = character.HumanoidRootPart
-        local humanoid = character.Humanoid
+        if not character then return end
+
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not hrp or not humanoid then return end
+
         local health = humanoid.Health
 
-        -- Disparador: cuando la vida baja a 20 o menos
+        -- Activar cuando llega a 20 HP o menos
         if health <= 20 and health > 0 and not isUnderground then
-            originalPos = hrp.Position -- Guardamos de dónde venimos
+            originalPos = hrp.Position
             isUnderground = true
+            EnableNoclip(character)
+
+            -- Forzar estado para que no se quede tirado
+            pcall(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                humanoid.PlatformStand = false
+            end)
         end
 
         if isUnderground then
             if health >= 32 then
-                -- Condición de salida: si sube a 32 de vida, regresamos arriba
+                -- Ya se regeneró → volver arriba
                 if originalPos then
-                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, 3, 0))
+                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, 4, 0))
                 end
                 isUnderground = false
                 originalPos = nil
+                DisableNoclip()
             else
-                -- Efecto: -13 studs abajo de la posición original con vibración aleatoria ("moverse como loco")
-                local randomJitter = Vector3.new(math.random(-4, 4), math.random(-2, 2), math.random(-4, 4))
+                -- Mantenerse a -13 studs con movimiento 
                 if originalPos then
-                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, -13, 0) + randomJitter)
+                    local jitter = Vector3.new(
+                        math.random(-5, 5),
+                        math.random(-1, 3),
+                        math.random(-5, 5)
+                    )
+                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, -13, 0) + jitter)
+                    
+                    -- Evitar que el humanoid se quede en estado de caído
+                    pcall(function()
+                        humanoid.PlatformStand = false
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                    end)
                 end
             end
         end
