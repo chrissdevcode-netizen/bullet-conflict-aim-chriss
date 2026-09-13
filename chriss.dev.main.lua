@@ -1548,19 +1548,14 @@ task.spawn(function()
     end)
 end)
 
--- ANTI-AIM
+-- ==================== ANTI-AIM (CON MOVIMIENTO) ====================
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
 
-    local lastPos = nil
-
     RunService.RenderStepped:Connect(function()
-        if not Config.AntiAim then 
-            lastPos = nil
-            return 
-        end
+        if not Config.AntiAim then return end
 
         local character = LocalPlayer.Character
         if not character then return end
@@ -1569,27 +1564,19 @@ task.spawn(function()
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if not hrp or not humanoid or humanoid.Health <= 0 then return end
 
-        -- Guardar posición real aproximadamente
-        if not lastPos then
-            lastPos = hrp.Position
-        end
-
-        -- Movimiento errático en todas direcciones
+        -- Solo agregamos jitter encima de tu movimiento actual
         local offset = Vector3.new(
-            math.random(-6, 6) * 0.4,   -- izquierda / derecha
-            math.random(-4, 5) * 0.35,  -- arriba / abajo
-            math.random(-6, 6) * 0.4    -- adelante / atrás
+            math.random(-5, 5) * 0.35,
+            math.random(-3, 4) * 0.3,
+            math.random(-5, 5) * 0.35
         )
 
-        -- Aplicar jitter
-        hrp.CFrame = CFrame.new(lastPos + offset) * CFrame.Angles(
-            math.rad(math.random(-15, 15)),
-            math.rad(math.random(-25, 25)),
-            math.rad(math.random(-15, 15))
+        -- Aplicar offset + un poco de rotación
+        hrp.CFrame = hrp.CFrame * CFrame.new(offset) * CFrame.Angles(
+            math.rad(math.random(-12, 12)),
+            math.rad(math.random(-18, 18)),
+            math.rad(math.random(-12, 12))
         )
-
-        -- Actualizar lastPos suavemente para que no se vaya volando
-        lastPos = lastPos:Lerp(hrp.Position, 0.15)
     end)
 end)
 
