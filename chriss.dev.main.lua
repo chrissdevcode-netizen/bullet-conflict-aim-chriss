@@ -1453,7 +1453,8 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
--- ANTI-KILL 
+
+-- ANTI-KILL MEJORADO 
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
@@ -1463,6 +1464,7 @@ task.spawn(function()
     local isUnderground = false
     local noclipConnection = nil
 
+    -- Función de Noclip
     local function EnableNoclip(character)
         if noclipConnection then noclipConnection:Disconnect() end
         
@@ -1484,6 +1486,7 @@ task.spawn(function()
     end
 
     RunService.Heartbeat:Connect(function()
+        -- Si el toggle está apagado
         if not Config.AntiKill then
             if isUnderground then
                 isUnderground = false
@@ -1502,12 +1505,13 @@ task.spawn(function()
 
         local health = humanoid.Health
 
-        -- Activar a 20 HP o menos
+        -- Activar cuando llega a 20 HP o menos
         if health <= 20 and health > 0 and not isUnderground then
             originalPos = hrp.Position
             isUnderground = true
             EnableNoclip(character)
 
+            -- Forzar estado para que no se quede tirado
             pcall(function()
                 humanoid:ChangeState(Enum.HumanoidStateType.Running)
                 humanoid.PlatformStand = false
@@ -1516,7 +1520,7 @@ task.spawn(function()
 
         if isUnderground then
             if health >= 32 then
-                -- Volver arriba
+                -- Ya se regeneró → volver arriba
                 if originalPos then
                     hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, 4, 0))
                 end
@@ -1524,15 +1528,16 @@ task.spawn(function()
                 originalPos = nil
                 DisableNoclip()
             else
-                -- -23 studs + movimiento más loco
+                -- -23 studs + más movimiento
                 if originalPos then
                     local jitter = Vector3.new(
-                        math.random(-9, 9),
+                        math.random(-10, 10),
                         math.random(-3, 5),
-                        math.random(-9, 9)
+                        math.random(-10, 10)
                     )
                     hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, -23, 0) + jitter)
-
+                    
+                    -- Evitar que el humanoid se quede en estado de caído
                     pcall(function()
                         humanoid.PlatformStand = false
                         humanoid:ChangeState(Enum.HumanoidStateType.Running)
