@@ -67,8 +67,8 @@ Config = {
     FOVRadius = 100,
     WallCheck = true,
     TargetPart = "HumanoidRootPart",
-    AntiKill = false,
-    AntiAim = false,            
+    AntiKill = false,   --NUEVA FUNCION
+    AntiAim = false,      --NUEVA FUNCION      
 
     -- Visuals
     Fullbright = false,
@@ -79,13 +79,13 @@ Config = {
     Traces = false,
     ESPGun = false, 
     ESPGunDist = false,
-    ESPSkeleton = false,         
+    ESPSkeleton = false,   --NUEVA FUNCION      
 
     -- Misc & Farming
     LockUI = false,
-    AutoFarm = false,
-    AutoSkipBuy = false,
-    InfiniteStamina = false      
+    AutoFarm = false,          --NUEVA FUNCION
+    AutoSkipBuy = false,     --NUEVA FUNCION
+    InfiniteStamina = false      --NUEVA FUNCION
     
 }
 getgenv().Config = Config 
