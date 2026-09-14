@@ -1157,7 +1157,7 @@ local function AddESP(player)
         Visible = false, Parent = cache.HealthBg
     })
 
-    -- TRACE (LÍNEA CON FRAME)
+    -- TRACE 
     cache.Trace = CreateUIElement("Frame", {
         BackgroundColor3 = Color3.fromRGB(255, 0, 0), BorderSizePixel = 0,
         AnchorPoint = Vector2.new(0.5, 0.5), Visible = false, Parent = ESPGui
@@ -1180,7 +1180,7 @@ for _, p in pairs(Players:GetPlayers()) do
     AddESP(p)
 end
 
--- MOTOR DE RENDERIZADO 
+--  RENDERIZADO 
 RunService.RenderStepped:Connect(function()
     local camera = workspace.CurrentCamera
     if not camera then return end
@@ -1194,7 +1194,7 @@ RunService.RenderStepped:Connect(function()
         local rootPart = character and character:FindFirstChild("HumanoidRootPart")
         local head = character and character:FindFirstChild("Head")
 
-        -- SI ESTÁ MUERTO O FUERA, ELIMINAR XD
+        -- SI ESTÁ MUERTO O FUERA ELIMINAR XD
         if not character or not humanoid or humanoid.Health <= 0 or not rootPart or not head then
             cache.Highlight.Enabled = false
             cache.Highlight.Adornee = nil
@@ -1319,7 +1319,7 @@ end)
                 
 
                 
--- LOGICA BYPASS
+-- BYPASS
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
@@ -1350,8 +1350,8 @@ RunService.Heartbeat:Connect(function()
     if Character and Humanoid and RootPart and Config.SpeedEnabled then
         local MoveDirection = Humanoid.MoveDirection
         if MoveDirection.Magnitude > 0 then
-            local speed = math.clamp(Config.SpeedValue, 60, 100)
-            RootPart.CFrame = RootPart.CFrame + (MoveDirection * (speed / 100))
+            local speed = math.clamp(Config.SpeedValue, 60, 150)
+            RootPart.CFrame = RootPart.CFrame + (MoveDirection * (speed / 150))
         end
     end
 end)
@@ -1454,7 +1454,7 @@ end)
 
 
 
--- ANTI-KILL MEJORADO 
+-- ANTI-KILL (aún no está bien hecho puedes mejorarlo si quieres)
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
@@ -1486,7 +1486,7 @@ task.spawn(function()
     end
 
     RunService.Heartbeat:Connect(function()
-        -- Si el toggle está apagado
+        
         if not Config.AntiKill then
             if isUnderground then
                 isUnderground = false
@@ -1505,13 +1505,13 @@ task.spawn(function()
 
         local health = humanoid.Health
 
-        -- Activar cuando llega a 20 HP o menos
+        
         if health <= 20 and health > 0 and not isUnderground then
             originalPos = hrp.Position
             isUnderground = true
             EnableNoclip(character)
 
-            -- Forzar estado para que no se quede tirado
+            
             pcall(function()
                 humanoid:ChangeState(Enum.HumanoidStateType.Running)
                 humanoid.PlatformStand = false
@@ -1520,7 +1520,7 @@ task.spawn(function()
 
         if isUnderground then
             if health >= 32 then
-                -- Ya se regeneró → volver arriba
+                --al tener los 32 de vida vuelve sla normalidad 
                 if originalPos then
                     hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, 4, 0))
                 end
@@ -1528,7 +1528,7 @@ task.spawn(function()
                 originalPos = nil
                 DisableNoclip()
             else
-                -- -23 studs + más movimiento
+                -- -23 studs  más movimiento XD 
                 if originalPos then
                     local jitter = Vector3.new(
                         math.random(-10, 10),
@@ -1537,7 +1537,7 @@ task.spawn(function()
                     )
                     hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, -23, 0) + jitter)
                     
-                    -- Evitar que el humanoid se quede en estado de caído
+                
                     pcall(function()
                         humanoid.PlatformStand = false
                         humanoid:ChangeState(Enum.HumanoidStateType.Running)
@@ -1548,14 +1548,14 @@ task.spawn(function()
     end)
 end)
 
--- ANTI-AIM (MOVIMIENTO CADA 1.5s)
+-- ANTI-AIM
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
 
     local lastTeleport = 0
-    local interval = 1.5 -- segundos entre cada movimiento
+    local interval = 1.5 
 
     RunService.Heartbeat:Connect(function()
         if not Config.AntiAim then return end
@@ -1571,7 +1571,7 @@ task.spawn(function()
         if now - lastTeleport < interval then return end
         lastTeleport = now
 
-        -- moviento alejado en todas direcciones
+        
         local offset = Vector3.new(
             math.random(-12, 12),
             math.random(-2, 6),
@@ -1585,7 +1585,7 @@ end)
 
 
 
--- 🎣 AUTO FISH, SHOP & SELL 
+-- autofarm por separado 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1594,11 +1594,11 @@ local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ⚙️Ñ VÍNCULO A LA CONFIGURACIÓN GLOBAL
+--  VÍNCULO A LA CONFIGURACIÓN 
 getgenv().Config = getgenv().Config or {}
 local Config = getgenv().Config
 
---  CREACIÓN DE LA INTERFAZ
+--   INTERFAZ
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AutoFarmStandalone"
 ScreenGui.ResetOnSpawn = false
@@ -1607,7 +1607,7 @@ ScreenGui.IgnoreGuiInset = true
 local success = pcall(function() ScreenGui.Parent = CoreGui end)
 if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Fondo principal (Dark Night Glassmorphism)
+-- Fondo  negro 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 250, 0, 270)
 MainFrame.Position = UDim2.new(0.5, -125, 0.2, 0)
@@ -1645,7 +1645,7 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
 
--- Botón manual para cerrar (X)
+-- (X)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -35, 0, 7)
@@ -1667,7 +1667,7 @@ Line.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 Line.BorderSizePixel = 0
 Line.Parent = MainFrame
 
--- 🎚️ FUNCIÓN CREADORA DE INTERRUPTORES
+--   TOGLEES
 local function CreateModernToggle(yPos, text, configKey)
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(0.6, 0, 0, 30)
@@ -1708,7 +1708,7 @@ local function CreateModernToggle(yPos, text, configKey)
     end)
 end
 
--- 🔘 FUNCIÓN CREADORA DE BOTONES
+--  BOTONES
 local function CreateButton(yPos, text, callback)
     local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(0.88, 0, 0, 32)
@@ -1746,7 +1746,7 @@ local function EjecutarVenta()
     end)
 end
 
-CreateButton(215, "💰 VENDER PECES AHORA", EjecutarVenta)
+CreateButton(215, "VENDER PECES AHORA", EjecutarVenta)
 
 --  LÓGICA DE AUTOMATIZACIÓN DE PESCA
 task.spawn(function()
@@ -1769,7 +1769,7 @@ task.spawn(function()
     end
 end)
 
---  LÓGICA DE AUTO COMPRA TEMPORIZADA (CADA 12 SEGUNDOS)
+--  LÓGICA DE AUTO COMPRA 
 task.spawn(function()
     local mopShopEvent = ReplicatedStorage:WaitForChild("MopShopEvent", 5)
     local buyTimer = 0
@@ -1788,15 +1788,15 @@ task.spawn(function()
                         end
                     end
                 end)
-                buyTimer = 0 -- Reinicia el contador tras comprar
+                buyTimer = 0 
             end
         else
-            buyTimer = 0 -- Reinicia el contador si se apagan los interruptores
+            buyTimer = 0 
         end
     end
 end)
 
---  LÓGICA DE AUTO VENTA TEMPORIZADA
+--  LÓGICA DE AUTO VENTA 
 task.spawn(function()
     local sellTimer = 0
     while task.wait(1) do
@@ -1812,7 +1812,7 @@ task.spawn(function()
     end
 end)
 
--- MONITOR DE ESTADO Y BLOQUEO DE INTERFAZ
+--  ESTADO Y BLOQUEO DE INTERFAZ
 task.spawn(function()
     while task.wait(0.1) do
         if getgenv().Config then
