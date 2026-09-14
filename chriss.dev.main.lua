@@ -1555,7 +1555,7 @@ task.spawn(function()
     local LocalPlayer = Players.LocalPlayer
 
     local lastTeleport = 0
-    local interval = 1.5 
+    local interval = 0.2
 
     RunService.Heartbeat:Connect(function()
         if not Config.AntiAim then return end
