@@ -236,11 +236,13 @@ CloseBtn.Parent = TopBar
 MakeSmoothDrag(MainFrame, TopBar)
 
 -- TAB PANEL
-local TabPanel = Instance.new("Frame")
+local TabPanel = Instance.new("ScrollingFrame")
 TabPanel.Size = UDim2.new(0, 110, 1, -42)
 TabPanel.Position = UDim2.new(0, 0, 0, 42)
 TabPanel.BackgroundColor3 = Color3.fromRGB(17, 18, 22)
 TabPanel.BorderSizePixel = 0
+TabPanel.ScrollBarThickness = 0 
+TabPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
 TabPanel.Parent = MainFrame
 
 local TabCorner = Instance.new("UICorner")
@@ -262,6 +264,11 @@ TabList.Parent = TabPanel
 local TabPadding = Instance.new("UIPadding")
 TabPadding.PaddingTop = UDim.new(0, 10)
 TabPadding.Parent = TabPanel
+
+
+TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    TabPanel.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 20)
+end)
 
 local PageContainer = Instance.new("Frame")
 PageContainer.Size = UDim2.new(1, -110, 1, -42)
