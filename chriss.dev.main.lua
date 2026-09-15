@@ -624,10 +624,13 @@ end
 
 
 -- CREACION CATEGORIAS
+-- CREACION CATEGORIAS
 local TabMain = CreateTab("Main", Theme.Main)
 local TabCheats = CreateTab("Player Cheats", Theme.Main) 
 local TabCombat = CreateTab("Combat", Theme.Combat)
 local TabVisuals = CreateTab("Visuals", Theme.Visuals)
+local TabTeleports = CreateTab("Teleports", Theme.Main)  -- 🚀 NUEVO
+local TabShop = CreateTab("Shop", Theme.Misc)           -- 🛒 NUEVO
 local TabMisc = CreateTab("Misc", Theme.Misc)
 
 -- SELECCIONAR MAIN POR DEFECTO PARA EL INICIO (PERO OCULTO)
