@@ -66,6 +66,7 @@ Config = {
     FOVEnabled = false, 
     FOVRadius = 100,
     WallCheck = true,
+    MagicBullet = false,
     TargetPart = "HumanoidRootPart",
     AntiKill = false,   --NUEVA FUNCION
     AntiAim = false,      --NUEVA FUNCION      
@@ -878,23 +879,13 @@ AddToggle(TabCombat, "Aimbot", "AimbotEnabled", Theme.Combat)
 AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
 AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
+AddToggle(TabCombat, "Magic Bullet", "MagicBullet", Theme.Combat)
 AddToggle(TabCombat, "Anti-Kill", "AntiKill", Theme.Combat)
 
 
 -- LOGICA WALL CHECK
-local function VerificarParedVisibilidad(objetivoParte)
-    if not Config.WallCheck then return true end 
-    
-    local origen = Camera.CFrame.Position
-    local destino = objetivoParte.Position
-    local raycastParams = RaycastParams.new()
-    
-    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, objetivoParte.Parent}
 
-    local resultado = workspace:Raycast(origen, destino - origen, raycastParams)
-    return resultado == nil 
-end
+
 
 -- LOGICA AIMBOT 
 local function ObtenerEnemigoMasCercano()
@@ -1528,99 +1519,9 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== SILENT AIM (WeaponEvent) ====================
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local WeaponEvent = ReplicatedStorage:WaitForChild("WeaponEvent")
 
 
 
-local function getTarget()
-    -- Si ya tienes Config.CurrentTarget, úsalo
-    if Config.CurrentTarget and Config.CurrentTarget.Character then
-        local root = Config.CurrentTarget.Character:FindFirstChild("HumanoidRootPart")
-        local hum = Config.CurrentTarget.Character:FindFirstChildOfClass("Humanoid")
-        if root and hum and hum.Health > 0 then
-            return root
-        end
-    end
-
-    -- Fallback: buscar el más cercano en FOV
-    local closest, closestDist = nil, Config.FOVRadius or 120
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player \~= LocalPlayer and player.Character then
-            local root = player.Character:FindFirstChild("HumanoidRootPart")
-            local hum = player.Character:FindFirstChildOfClass("Humanoid")
-            if root and hum and hum.Health > 0 then
-                local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
-                if onScreen then
-                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                    if dist < closestDist then
-                        -- Wallcheck opcional
-                        local canHit = true
-                        if Config.WallCheck and VerificarParedVisibilidad then
-                            canHit = VerificarParedVisibilidad(root)
-                        end
-                        if canHit then
-                            closestDist = dist
-                            closest = root
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return closest
-end
-
--- Hook del arma
-local oldFire
-oldFire = hookfunction(WeaponEvent.FireServer, function(self, ...)
-    if self \~= WeaponEvent then
-        return oldFire(self, ...)
-    end
-
-    local args = {...}
-
-    -- Solo si Silent Aim está activo y es un disparo
-    if Config.SilentAim and args[1] == "Fire" then
-        local targetRoot = getTarget()
-
-        if targetRoot then
-            local hitPos = targetRoot.Position
-            local hitNormal = Vector3.new(0, 1, 0)
-
-            -- Disparo normal (pistola/rifle)
-            if typeof(args[2]) == "Instance" then
-                args[2] = targetRoot          -- target
-                args[3] = hitPos              -- hitPos
-                args[4] = hitNormal           -- hitNormal
-
-            -- Disparo de escopeta (tabla de pellets)
-            elseif typeof(args[2]) == "table" then
-                local pellets = {}
-                for i = 1, #args[2] do
-                    table.insert(pellets, {
-                        target = targetRoot,
-                        hitPos = hitPos,
-                        hitNormal = hitNormal
-                    })
-                end
-                args[2] = pellets
-            end
-        end
-    end
-
-    return oldFire(self, unpack(args))
-end)
-
-print("Silent Aim cargado → HumanoidRootPart")
 
 
 
