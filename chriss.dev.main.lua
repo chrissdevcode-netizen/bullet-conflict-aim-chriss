@@ -880,6 +880,7 @@ AddSlider(TabCombat, "FOV Radio", 30, 300, 100, "FOVRadius", Theme.Combat)
 AddToggle(TabCombat, "Show FOV Anillo", "FOVEnabled", Theme.Combat)
 AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
 AddToggle(TabCombat, "Magic Bullet", "MagicBullet", Theme.Combat)
+AddToggle(TabCombat, "Wall Check", "WallCheck", Theme.Combat)
 AddToggle(TabCombat, "Anti-Kill", "AntiKill", Theme.Combat)
 
 
