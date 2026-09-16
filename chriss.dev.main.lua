@@ -980,7 +980,7 @@ AddToggle(TabVisuals, "ESP Skeleton 💀", "ESPSkeleton", Theme.Visuals)
 
 -- TELEPORT
 
--- Función auxiliar para teletransportar seguro (evita errores si el personaje muere)
+
 local function TeleportTo(targetCFrame)
     pcall(function()
         local character = LocalPlayer.Character
@@ -993,54 +993,130 @@ local function TeleportTo(targetCFrame)
 end
 
 --  TELEPORTS AGREGADOS 🗣️🔥 xD 
-AddButton(TabTeleports, "TP Ventas 🏪", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Ventas ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(1158.75, 51.65, -596.08))
 end)
 
-AddButton(TabTeleports, "TP Guns 🔫", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Gun  shop", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(-211.26, 51.09, -231.06))
 end)
 
-AddButton(TabTeleports, "TP Bicis 🚲", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Bicis ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(257.07, 51.12, -246.86))
 end)
 
-AddButton(TabTeleports, "TP Bar 🍺", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Bar ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(1197.69, 50.75, -380.67))
 end)
 
-AddButton(TabTeleports, "TP Burger 🍔", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Burger ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(143.45, 51.32, -279.98))
 end)
 
-AddButton(TabTeleports, "TP Quick 11 🏪", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, "Quick 11 ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(109.47, 51.12, 172.15))
 end)
 
-AddButton(TabTeleports, "TP Jack 🎃", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, "Jack shop ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(-115.90, 52.45, 171.21))
 end)
 
-AddButton(TabTeleports, "TP Cars 🚗", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Cars  shop", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(121.30, 51.29, 504.19))
 end)
 
--- 🌊 ZONAS DE AGUA Y PESCA
-AddButton(TabTeleports, "TP Lago 1 🌊", Theme.Main).MouseButton1Click:Connect(function()
+--  ZONAS DE PESCA
+AddButton(TabTeleports, " Lago 1 ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(202.84, 39.62, -850.03))
 end)
 
-AddButton(TabTeleports, "TP Lago 2 🌊", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Lago 2 ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(962.45, 37.86, -886.48))
 end)
 
-AddButton(TabTeleports, "TP Muelle 1 ⚓", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Muelle 1 ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(-353.76, 39.34, 959.10))
 end)
 
-AddButton(TabTeleports, "TP Muelle 2 ⚓", Theme.Main).MouseButton1Click:Connect(function()
+AddButton(TabTeleports, " Muelle 2 ", Theme.Main).MouseButton1Click:Connect(function()
     TeleportTo(CFrame.new(173.85, 39.94, 819.11))
 end)
+
+
+
+--   SHOP COMPRA XD 
+local RS = game:GetService("ReplicatedStorage")
+
+--  CAJAS DE ARMAS (GUN CRATES)
+AddButton(TabShop, "Comprar Caja Standard ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("OpenWeaponCrateEvent"):FireServer("Standard")
+    end)
+end)
+
+AddButton(TabShop, "Comprar Caja Premium ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("OpenWeaponCrateEvent"):FireServer("Premium")
+    end)
+end)
+
+AddButton(TabShop, "Comprar Caja Ultimate ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("OpenWeaponCrateEvent"):FireServer("Ultimate")
+    end)
+end)
+
+--  MOPAS
+AddButton(TabShop, "Comprar Mopa Normal ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "SilverMop", 1)
+    end)
+end)
+
+AddButton(TabShop, "Comprar Mopa de Oro ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "GoldMop", 1)
+    end)
+end)
+
+AddButton(TabShop, "Comprar Mopa Diamante ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "DiamondMop", 1)
+    end)
+end)
+
+--  CAÑAS DE PESCAR
+AddButton(TabShop, "Comprar Caña Regular ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "FishingRod", 1)
+    end)
+end)
+
+AddButton(TabShop, "Comprar Caña Pro ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "FishingRodPro", 1)
+    end)
+end)
+
+AddButton(TabShop, "Comprar Caña Ultimate ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "FishingRodUltimate", 1)
+    end)
+end)
+
+-- CEBOS
+AddButton(TabShop, "Comprar Cebo Regular ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecRegular", 1)
+    end)
+end)
+
+AddButton(TabShop, "Comprar Cebo Ultimate ", Theme.Misc).MouseButton1Click:Connect(function()
+    pcall(function()
+        RS:WaitForChild("MopShopEvent"):FireServer("BUY", "WormtecUltimate", 1)
+    end)
+end)
+
 
 
 -- MISC & FARMING
