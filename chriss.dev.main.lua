@@ -1613,7 +1613,8 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
--- ==================== MAGIC BULLET ====================
+
+    -- ==================== MAGIC BULLET (CORREGIDO) ====================
 task.spawn(function()
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1623,20 +1624,27 @@ task.spawn(function()
 
     local WeaponEvent = ReplicatedStorage:WaitForChild("WeaponEvent", 10)
     if not WeaponEvent then
-        warn("[MagicBullet] No se encontró WeaponEvent")
+        warn("[MagicBullet] WeaponEvent no encontrado")
         return
     end
 
-    -- Ajusta estos valores si quieres
-    local FIRE_DELAY = 0.12        -- tiempo entre balas (más bajo = más rápido)
-    local MAX_DISTANCE = 1000       -- distancia máxima
+    -- Compatible con vector.create (juego) y Vector3
+    local function makeVector(x, y, z)
+        if typeof(vector) == "table" and vector.create then
+            return vector.create(x, y, z)
+        end
+        return Vector3.new(x, y, z)
+    end
+
+    local FIRE_DELAY = 0.15
     local lastFire = 0
 
     local function getClosestEnemy()
         local closest = nil
-        local closestDist = Config.FOVRadius or 120
+        local closestDist = (Config and Config.FOVRadius) or 120
         local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local myChar = LocalPlayer.Character
+        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
 
         for _, player in ipairs(Players:GetPlayers()) do
             if player \~= LocalPlayer and player.Character then
@@ -1645,12 +1653,9 @@ task.spawn(function()
 
                 if hum and root and hum.Health > 0 then
                     local screenPos, onScreen = Camera:WorldToViewportPoint(root.Position)
-
                     if onScreen then
                         local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
-                        local worldDist = myRoot and (root.Position - myRoot.Position).Magnitude or 0
-
-                        if screenDist < closestDist and worldDist < MAX_DISTANCE then
+                        if screenDist < closestDist then
                             closestDist = screenDist
                             closest = root
                         end
@@ -1658,32 +1663,43 @@ task.spawn(function()
                 end
             end
         end
-
         return closest
     end
 
-    local function hasGun()
-        local char = LocalPlayer.Character
-        if not char then return false end
-        return char:FindFirstChildOfClass("Tool") \~= nil
-    end
+    local function fireAt(root)
+        if not root or not root.Parent then return end
 
-    local function fireMagic(targetRoot)
-        if not targetRoot or not targetRoot.Parent then return end
+        local myHead = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head")
+        local origin = myHead and myHead.Position or (Camera and Camera.CFrame.Position)
+        if not origin then return end
 
-        local hitPos = targetRoot.Position
-        local hitNormal = Vector3.new(0, 1, 0)
+        local hitPos = root.Position
+        local dir = (hitPos - origin)
+        if dir.Magnitude < 0.1 then return end
+        local hitNormal = dir.Unit
 
-    
-        
-        pcall(function()
-            WeaponEvent:FireServer("Fire", targetRoot, hitPos, hitNormal)
+        -- Formato exacto de tu captura:
+        -- FireServer("Fire", targetPart, hitPos, hitNormal)
+        local ok, err = pcall(function()
+            WeaponEvent:FireServer(
+                "Fire",
+                root,
+                makeVector(hitPos.X, hitPos.Y, hitPos.Z),
+                makeVector(hitNormal.X, hitNormal.Y, hitNormal.Z)
+            )
         end)
+
+        if not ok then
+            warn("[MagicBullet] Error al disparar:", err)
+        end
     end
 
     RunService.Heartbeat:Connect(function()
-        if not Config.MagicBullet then return end
-        if not hasGun() then return end
+        if not Config or not Config.MagicBullet then return end
+
+        local char = LocalPlayer.Character
+        if not char then return end
+        if not char:FindFirstChildOfClass("Tool") then return end
 
         local now = tick()
         if now - lastFire < FIRE_DELAY then return end
@@ -1691,11 +1707,11 @@ task.spawn(function()
         local target = getClosestEnemy()
         if target then
             lastFire = now
-            fireMagic(target)
+            fireAt(target)
         end
     end)
 
-    print("[MagicBullet] Cargado → HumanoidRootPart | Delay:", FIRE_DELAY)
+    print("[MagicBullet] Listo (vector compatible)")
 end)
 
 
