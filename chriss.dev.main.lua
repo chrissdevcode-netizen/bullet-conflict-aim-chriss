@@ -1510,8 +1510,8 @@ RunService.Heartbeat:Connect(function()
     if Character and Humanoid and RootPart and Config.SpeedEnabled then
         local MoveDirection = Humanoid.MoveDirection
         if MoveDirection.Magnitude > 0 then
-            local speed = math.clamp(Config.SpeedValue, 60, 150)
-            RootPart.CFrame = RootPart.CFrame + (MoveDirection * (speed / 150))
+            local speed = math.clamp(Config.SpeedValue, 60, 290)
+            RootPart.CFrame = RootPart.CFrame + (MoveDirection * (speed / 290))
         end
     end
 end)
