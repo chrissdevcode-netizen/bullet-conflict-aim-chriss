@@ -884,6 +884,19 @@ AddToggle(TabCombat, "Anti-Kill", "AntiKill", Theme.Combat)
 
 
 -- LOGICA WALL CHECK
+local function VerificarParedVisibilidad(objetivoParte)
+    if not Config.WallCheck then return true end 
+    
+    local origen = Camera.CFrame.Position
+    local destino = objetivoParte.Position
+    local raycastParams = RaycastParams.new()
+    
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, objetivoParte.Parent}
+
+    local resultado = workspace:Raycast(origen, destino - origen, raycastParams)
+    return resultado == nil 
+end
 
 
 
@@ -916,20 +929,7 @@ local function ObtenerEnemigoMasCercano()
     return objetivoCercano
 end
 
--- LOGICA WALL CHECK
-local function VerificarParedVisibilidad(objetivoParte)
-    if not Config.WallCheck then return true end 
-    
-    local origen = Camera.CFrame.Position
-    local destino = objetivoParte.Position
-    local raycastParams = RaycastParams.new()
-    
-    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, objetivoParte.Parent}
 
-    local resultado = workspace:Raycast(origen, destino - origen, raycastParams)
-    return resultado == nil 
-end
 
 
 -- LOGICA FOV & AIMBOT MAIN
