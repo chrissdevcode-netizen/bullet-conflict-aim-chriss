@@ -1614,52 +1614,23 @@ end)
 
 
 
-                            
-            
 
 
-
-
-
-
--- ANTI-KILL (aún no está bien hecho puedes mejorarlo si quieres)
+        -- ==================== ANTI-KILL (TP SEGURO) ====================
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
 
-    local originalPos = nil
-    local isUnderground = false
-    local noclipConnection = nil
-
-    -- Función de Noclip
-    local function EnableNoclip(character)
-        if noclipConnection then noclipConnection:Disconnect() end
-        
-        noclipConnection = RunService.Stepped:Connect(function()
-            if not character then return end
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end)
-    end
-
-    local function DisableNoclip()
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-    end
+    local SAFE_CF = CFrame.new(266.11, 51.12, -285.15)
+    local originalCF = nil
+    local isSafe = false
 
     RunService.Heartbeat:Connect(function()
-        
         if not Config.AntiKill then
-            if isUnderground then
-                isUnderground = false
-                originalPos = nil
-                DisableNoclip()
+            if isSafe then
+                isSafe = false
+                originalCF = nil
             end
             return
         end
@@ -1673,48 +1644,53 @@ task.spawn(function()
 
         local health = humanoid.Health
 
-        
-        if health <= 20 and health > 0 and not isUnderground then
-            originalPos = hrp.Position
-            isUnderground = true
-            EnableNoclip(character)
+        -- Activar: 50 HP o menos
+        if health <= 50 and health > 0 and not isSafe then
+            originalCF = hrp.CFrame
+            isSafe = true
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.CFrame = SAFE_CF
 
-            
             pcall(function()
-                humanoid:ChangeState(Enum.HumanoidStateType.Running)
                 humanoid.PlatformStand = false
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
             end)
         end
 
-        if isUnderground then
-            if health >= 32 then
-                --al tener los 32 de vida vuelve sla normalidad 
-                if originalPos then
-                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, 4, 0))
-                end
-                isUnderground = false
-                originalPos = nil
-                DisableNoclip()
-            else
-                -- -23 studs  más movimiento XD 
-                if originalPos then
-                    local jitter = Vector3.new(
-                        math.random(-10, 10),
-                        math.random(-3, 5),
-                        math.random(-10, 10)
-                    )
-                    hrp.CFrame = CFrame.new(originalPos + Vector3.new(0, -23, 0) + jitter)
-                    
+        -- Mantenerse en la zona segura mientras se regenera
+        if isSafe then
+            if health >= 73 then
                 
-                    pcall(function()
-                        humanoid.PlatformStand = false
-                        humanoid:ChangeState(Enum.HumanoidStateType.Running)
-                    end)
+                if originalCF then
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+                    hrp.CFrame = originalCF + Vector3.new(0, 3, 0)
                 end
+                isSafe = false
+                originalCF = nil
+            else
+                
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = SAFE_CF
+
+                pcall(function()
+                    humanoid.PlatformStand = false
+                    humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                end)
             end
         end
     end)
 end)
+
+                
+
+            
+
+
+
+
+
+
+
 
 -- ANTI-AIM
 task.spawn(function()
