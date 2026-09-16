@@ -1613,6 +1613,92 @@ RunService.RenderStepped:Connect(function()
 end)
 
 
+-- ==================== MAGIC BULLET ====================
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local Camera = workspace.CurrentCamera
+
+    local WeaponEvent = ReplicatedStorage:WaitForChild("WeaponEvent", 10)
+    if not WeaponEvent then
+        warn("[MagicBullet] No se encontró WeaponEvent")
+        return
+    end
+
+    -- Ajusta estos valores si quieres
+    local FIRE_DELAY = 0.12        -- tiempo entre balas (más bajo = más rápido)
+    local MAX_DISTANCE = 1000       -- distancia máxima
+    local lastFire = 0
+
+    local function getClosestEnemy()
+        local closest = nil
+        local closestDist = Config.FOVRadius or 120
+        local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player \~= LocalPlayer and player.Character then
+                local hum = player.Character:FindFirstChildOfClass("Humanoid")
+                local root = player.Character:FindFirstChild("HumanoidRootPart")
+
+                if hum and root and hum.Health > 0 then
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(root.Position)
+
+                    if onScreen then
+                        local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                        local worldDist = myRoot and (root.Position - myRoot.Position).Magnitude or 0
+
+                        if screenDist < closestDist and worldDist < MAX_DISTANCE then
+                            closestDist = screenDist
+                            closest = root
+                        end
+                    end
+                end
+            end
+        end
+
+        return closest
+    end
+
+    local function hasGun()
+        local char = LocalPlayer.Character
+        if not char then return false end
+        return char:FindFirstChildOfClass("Tool") \~= nil
+    end
+
+    local function fireMagic(targetRoot)
+        if not targetRoot or not targetRoot.Parent then return end
+
+        local hitPos = targetRoot.Position
+        local hitNormal = Vector3.new(0, 1, 0)
+
+    
+        
+        pcall(function()
+            WeaponEvent:FireServer("Fire", targetRoot, hitPos, hitNormal)
+        end)
+    end
+
+    RunService.Heartbeat:Connect(function()
+        if not Config.MagicBullet then return end
+        if not hasGun() then return end
+
+        local now = tick()
+        if now - lastFire < FIRE_DELAY then return end
+
+        local target = getClosestEnemy()
+        if target then
+            lastFire = now
+            fireMagic(target)
+        end
+    end)
+
+    print("[MagicBullet] Cargado → HumanoidRootPart | Delay:", FIRE_DELAY)
+end)
+
+
 
 
 
