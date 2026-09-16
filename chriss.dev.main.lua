@@ -1945,7 +1945,7 @@ task.spawn(function()
     while task.wait(1) do
         if Config.AutoFarm and (Config.AutoRegular or Config.AutoUltimate) then
             buyTimer = buyTimer + 1
-            if buyTimer >= 12 then
+            if buyTimer >= 7 then
                 pcall(function()
                     if mopShopEvent then
                         if Config.AutoUltimate then
