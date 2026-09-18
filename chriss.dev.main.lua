@@ -1616,7 +1616,7 @@ end)
 
 
 
-        -- ==================== ANTI-KILL (TP SEGURO) ====================
+        -- ANTI-KILL 
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
@@ -1644,7 +1644,7 @@ task.spawn(function()
 
         local health = humanoid.Health
 
-        -- Activar: 50 HP o menos
+        --  50 HP o menos
         if health <= 50 and health > 0 and not isSafe then
             originalCF = hrp.CFrame
             isSafe = true
@@ -1657,7 +1657,7 @@ task.spawn(function()
             end)
         end
 
-        -- Mantenerse en la zona segura mientras se regenera
+        -- se mantiene en la zona segura mientras se regenera 🗣️🔥
         if isSafe then
             if health >= 73 then
                 
@@ -1692,17 +1692,40 @@ end)
 
 
 
--- ANTI-AIM
+
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
 
-    local lastTeleport = 0
-    local interval = 0.2
+    local noclipConn = nil
+    local wasActive = false
 
-    RunService.Heartbeat:Connect(function()
-        if not Config.AntiAim then return end
+    local function setNoclip(character, enabled)
+        if noclipConn then
+            noclipConn:Disconnect()
+            noclipConn = nil
+        end
+        if not enabled or not character then return end
+
+        noclipConn = RunService.Stepped:Connect(function()
+            if not character or not character.Parent then return end
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+    end
+
+    RunService.RenderStepped:Connect(function(dt)
+        if not Config.AntiAim then
+            if wasActive then
+                setNoclip(LocalPlayer.Character, false)
+                wasActive = false
+            end
+            return
+        end
 
         local character = LocalPlayer.Character
         if not character then return end
@@ -1711,21 +1734,40 @@ task.spawn(function()
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if not hrp or not humanoid or humanoid.Health <= 0 then return end
 
-        local now = tick()
-        if now - lastTeleport < interval then return end
-        lastTeleport = now
+        if not wasActive then
+            setNoclip(character, true)
+            wasActive = true
+        end
+
+    
+        local speed = humanoid.WalkSpeed or 16
+        local moveDir = humanoid.MoveDirection
+        local walk = moveDir * speed
 
         
-        local offset = Vector3.new(
-            math.random(-12, 12),
-            math.random(-2, 6),
-            math.random(-12, 12)
+    
+        local t = tick()
+        local jitter = Vector3.new(
+            math.sin(t * 22) * 18,   
+            math.sin(t * 18) * 14,   
+            math.cos(t * 22) * 18    
+                )
+        
+        local currentY = hrp.AssemblyLinearVelocity.Y
+        hrp.AssemblyLinearVelocity = Vector3.new(
+            walk.X + jitter.X,
+            jitter.Y,             
+            walk.Z + jitter.Z
         )
 
-        hrp.CFrame = hrp.CFrame + offset
+        
+        hrp.CFrame = hrp.CFrame * CFrame.new(
+            math.sin(t * 30) * 0.4,
+            math.sin(t * 26) * 0.35,
+            math.cos(t * 30) * 0.4
+        )
     end)
 end)
- 
 
 
 
