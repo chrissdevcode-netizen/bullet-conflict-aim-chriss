@@ -1682,17 +1682,7 @@ task.spawn(function()
 end)
 
                 
-
-            
-
-
-
-
-
-
-
-
-
+--  ANTI-AIM 
 task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
@@ -1718,7 +1708,7 @@ task.spawn(function()
         end)
     end
 
-    RunService.RenderStepped:Connect(function(dt)
+    RunService.RenderStepped:Connect(function()
         if not Config.AntiAim then
             if wasActive then
                 setNoclip(LocalPlayer.Character, false)
@@ -1739,37 +1729,30 @@ task.spawn(function()
             wasActive = true
         end
 
-    
         local speed = humanoid.WalkSpeed or 16
         local moveDir = humanoid.MoveDirection
         local walk = moveDir * speed
 
-        
-    
         local t = tick()
         local jitter = Vector3.new(
-            math.sin(t * 22) * 18  →  * 28   -- más ancho
-            math.sin(t * 18) * 14  →  * 25   -- más arriba/abajo  
-            math.cos(t * 22) * 18    
-                )
-        
-        local currentY = hrp.AssemblyLinearVelocity.Y
+            math.sin(t * 26) * 28,   
+            math.sin(t * 20) * 22,   
+            math.cos(t * 26) * 28    
+        )
+
         hrp.AssemblyLinearVelocity = Vector3.new(
             walk.X + jitter.X,
-            jitter.Y,             
+            jitter.Y,
             walk.Z + jitter.Z
         )
 
-        
         hrp.CFrame = hrp.CFrame * CFrame.new(
-            math.sin(t * 30) * 0.4,
-            math.sin(t * 26) * 0.35,
-            math.cos(t * 30) * 0.4
+            math.sin(t * 34) * 0.65,
+            math.sin(t * 30) * 0.55,
+            math.cos(t * 34) * 0.65
         )
     end)
-end)
-
-
+end)        
 
 -- autofarm por separado 
 
