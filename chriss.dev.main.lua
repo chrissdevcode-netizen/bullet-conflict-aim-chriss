@@ -1748,8 +1748,8 @@ task.spawn(function()
     
         local t = tick()
         local jitter = Vector3.new(
-            math.sin(t * 22) * 18,   
-            math.sin(t * 18) * 14,   
+            math.sin(t * 22) * 18  →  * 28   -- más ancho
+            math.sin(t * 18) * 14  →  * 25   -- más arriba/abajo  
             math.cos(t * 22) * 18    
                 )
         
