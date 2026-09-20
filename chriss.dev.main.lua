@@ -1997,4 +1997,313 @@ task.spawn(function()
 end)
 
 
-    
+
+
+
+--NUEVA FUNCIÓN POR SEPARADO SI LO QUEREMOS SSO XDDD 
+
+
+--GOHTS CHRISS 
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local Camera = workspace.CurrentCamera
+
+    local ghostEnabled = false
+    local savedCF = nil
+    local clone = nil
+    local cloneHRP = nil
+    local cloneHum = nil
+    local ghostSpeed = 45
+    local debounce = false
+
+    -- RECTÁNGULO TOGGLE 
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "ChrissGhostUI"
+    gui.ResetOnSpawn = false
+    pcall(function()
+        gui.Parent = game:GetService("CoreGui")
+    end)
+    if not gui.Parent then
+        gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    end
+
+    local btn = Instance.new("TextButton")
+    btn.Name = "GhostToggle"
+    btn.Size = UDim2.new(0, 110, 0, 32) -- mini rectángulo
+    btn.Position = UDim2.new(0, 16, 0.28, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 50, 120)
+    btn.BackgroundTransparency = 0.1
+    btn.BorderSizePixel = 0
+    btn.Text = "Chriss Ghost"
+    btn.TextColor3 = Color3.fromRGB(230, 240, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.AutoButtonColor = false
+    btn.Parent = gui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = btn
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(70, 140, 255)
+    stroke.Thickness = 1.2
+    stroke.Transparency = 0.15
+    stroke.Parent = btn
+
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 6)
+    pad.PaddingRight = UDim.new(0, 6)
+    pad.Parent = btn
+
+    local function setButton(on)
+        if on then
+            btn.BackgroundColor3 = Color3.fromRGB(25, 110, 210)
+            stroke.Color = Color3.fromRGB(120, 190, 255)
+            btn.Text = "Ghost ON"
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(20, 50, 120)
+            stroke.Color = Color3.fromRGB(70, 140, 255)
+            btn.Text = "Chriss Ghost"
+        end
+    end
+
+    --  HELPERS 
+    local function getReal()
+        local char = LocalPlayer.Character
+        if not char then return nil, nil, nil end
+        return char, char:FindFirstChild("HumanoidRootPart"), char:FindFirstChildOfClass("Humanoid")
+    end
+
+    local function clearClone()
+        if clone then
+            pcall(function() clone:Destroy() end)
+        end
+        clone = nil
+        cloneHRP = nil
+        cloneHum = nil
+    end
+
+    local function hideReal(char)
+        for _, p in ipairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.LocalTransparencyModifier = 1
+            end
+        end
+    end
+
+    local function showReal(char)
+        for _, p in ipairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.LocalTransparencyModifier = 0
+            end
+        end
+    end
+
+    local function makeClone(char, hrp)
+        clearClone()
+
+        char.Archivable = true
+        local ok, cloned = pcall(function()
+            return char:Clone()
+        end)
+        char.Archivable = false
+
+        if not ok or not cloned then
+            return false
+        end
+
+        clone = cloned
+        clone.Name = "ChrissGhostClone"
+
+        -- borrar scripts del clone
+        for _, v in ipairs(clone:GetDescendants()) do
+            if v:IsA("Script") or v:IsA("LocalScript") or v:IsA("ModuleScript") then
+                v:Destroy()
+            end
+        end
+
+        cloneHRP = clone:FindFirstChild("HumanoidRootPart")
+        cloneHum = clone:FindFirstChildOfClass("Humanoid")
+
+        if not cloneHRP or not cloneHum then
+            clearClone()
+            return false
+        end
+
+        -- semi transparente Y noclip
+        for _, p in ipairs(clone:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.CanCollide = false
+                if p.Name == "HumanoidRootPart" then
+                    p.Transparency = 1
+                else
+                    p.Transparency = 0.4
+                end
+            end
+        end
+
+        clone.Parent = workspace
+        cloneHRP.CFrame = hrp.CFrame * CFrame.new(0, 3, 0)
+
+        cloneHum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+        Camera.CameraType = Enum.CameraType.Custom
+        Camera.CameraSubject = cloneHum
+
+        return true
+    end
+
+    --  ON / OFF 
+    local function enableGhost()
+        local char, hrp, hum = getReal()
+        if not char or not hrp or not hum then return end
+        if hum.Health <= 0 then return end
+
+        savedCF = hrp.CFrame
+
+        if not makeClone(char, hrp) then
+            savedCF = nil
+            return
+        end
+
+        hideReal(char)
+        ghostEnabled = true
+        setButton(true)
+    end
+
+    local function disableGhost()
+        if not ghostEnabled then return end
+        ghostEnabled = false
+        setButton(false)
+
+        local targetCF = nil
+        if cloneHRP then
+            targetCF = cloneHRP.CFrame
+        elseif savedCF then
+            targetCF = savedCF
+        end
+
+        local char, hrp, hum = getReal()
+
+        task.delay(0.08, function()
+            char, hrp, hum = getReal()
+            if hrp and targetCF then
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = targetCF * CFrame.new(0, 2, 0)
+            end
+            if char then
+                showReal(char)
+            end
+            clearClone()
+            Camera.CameraType = Enum.CameraType.Custom
+            if hum then
+                Camera.CameraSubject = hum
+            end
+            savedCF = nil
+        end)
+    end
+
+    local function fullReset()
+        ghostEnabled = false
+        setButton(false)
+        clearClone()
+        savedCF = nil
+        local char, _, hum = getReal()
+        if char then showReal(char) end
+        Camera.CameraType = Enum.CameraType.Custom
+        if hum then
+            Camera.CameraSubject = hum
+        end
+    end
+
+    local function onToggle()
+        if debounce then return end
+        debounce = true
+
+        if ghostEnabled then
+            disableGhost()
+        else
+            enableGhost()
+        end
+
+        task.delay(0.35, function()
+            debounce = false
+        end)
+    end
+
+    btn.MouseButton1Click:Connect(onToggle)
+
+    --  LOOP 
+    RunService.RenderStepped:Connect(function()
+        if not ghostEnabled then return end
+
+        local char, hrp, hum = getReal()
+
+        --  cuerpo real q
+        if hrp and savedCF then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.CFrame = savedCF
+        end
+
+        
+        if not cloneHRP or not hum then return end
+
+        local moveDir = hum.MoveDirection
+        if moveDir.Magnitude > 0.05 then
+            local vel = moveDir * ghostSpeed
+
+            
+            local lookY = Camera.CFrame.LookVector.Y
+            if lookY > 0.35 then
+                vel = vel + Vector3.new(0, ghostSpeed * 0.6, 0)
+            elseif lookY < -0.35 then
+                vel = vel + Vector3.new(0, -ghostSpeed * 0.6, 0)
+            end
+
+            cloneHRP.AssemblyLinearVelocity = vel
+
+            local flat = Vector3.new(moveDir.X, 0, moveDir.Z)
+            if flat.Magnitude > 0.1 then
+                cloneHRP.CFrame = CFrame.new(cloneHRP.Position, cloneHRP.Position + flat)
+            end
+        else
+            cloneHRP.AssemblyLinearVelocity = Vector3.zero
+        end
+
+        -- noclip clone
+        if clone then
+            for _, p in ipairs(clone:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.CanCollide = false
+                end
+            end
+        end
+    end)
+
+    --  RESET AL MORIR 
+    local function hookChar(char)
+        local hum = char:WaitForChild("Humanoid", 8)
+        if not hum then return end
+        hum.Died:Connect(function()
+            if ghostEnabled then
+                fullReset()
+            end
+        end)
+    end
+
+    if LocalPlayer.Character then
+        hookChar(LocalPlayer.Character)
+    end
+    LocalPlayer.CharacterAdded:Connect(function(char)
+        if ghostEnabled then
+            fullReset()
+        end
+        hookChar(char)
+    end)
+
+    -- inicio siempre OFF
+    ghostEnabled = false
+    setButton(false)
+end)
