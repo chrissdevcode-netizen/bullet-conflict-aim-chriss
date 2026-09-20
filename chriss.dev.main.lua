@@ -2000,7 +2000,7 @@ end)
 
 
 
---NUEVA FUNCIÓN POR SEPARADO SI LO QUEREMOS SSO XDDD 
+--NUEVA FUNCIÓN POR SEPARADO SI LO QUEREMOS así XDDD 
 
 
 --GOHTS CHRISS 
@@ -2015,10 +2015,10 @@ task.spawn(function()
     local clone = nil
     local cloneHRP = nil
     local cloneHum = nil
-    local ghostSpeed = 80
+    local ghostSpeed = 95
     local debounce = false
 
-    -- RECTÁNGULO TOGGLE 
+    --  TOGGLE 
     local gui = Instance.new("ScreenGui")
     gui.Name = "ChrissGhostUI"
     gui.ResetOnSpawn = false
@@ -2031,7 +2031,7 @@ task.spawn(function()
 
     local btn = Instance.new("TextButton")
     btn.Name = "GhostToggle"
-    btn.Size = UDim2.new(0, 110, 0, 32) -- mini rectángulo
+    btn.Size = UDim2.new(0, 110, 0, 32)
     btn.Position = UDim2.new(0, 16, 0.28, 0)
     btn.BackgroundColor3 = Color3.fromRGB(20, 50, 120)
     btn.BackgroundTransparency = 0.1
@@ -2155,7 +2155,7 @@ task.spawn(function()
         return true
     end
 
-    --  ON / OFF 
+    --  ON y OFF
     local function enableGhost()
         local char, hrp, hum = getReal()
         if not char or not hrp or not hum then return end
@@ -2241,7 +2241,7 @@ task.spawn(function()
 
         local char, hrp, hum = getReal()
 
-        --  cuerpo real q
+        --  cuerpo real 
         if hrp and savedCF then
             hrp.AssemblyLinearVelocity = Vector3.zero
             hrp.CFrame = savedCF
@@ -2303,7 +2303,7 @@ task.spawn(function()
         hookChar(char)
     end)
 
-    -- inicio siempre OFF
+
     ghostEnabled = false
     setButton(false)
 end)
