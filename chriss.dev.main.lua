@@ -2015,7 +2015,7 @@ task.spawn(function()
     local clone = nil
     local cloneHRP = nil
     local cloneHum = nil
-    local ghostSpeed = 95
+    local ghostSpeed = 40
     local debounce = false
 
     --  TOGGLE 
